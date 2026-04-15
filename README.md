@@ -9,7 +9,7 @@ Research-oriented Python codebase for:
 
 ## Current foundation
 
-This repository currently implements the first clean vertical slice:
+This repository currently implements the current stable foundation:
 
 - canonical `QUBOModel`, `IsingModel`, and standardized result containers,
 - QUBO-to-Ising conversion utilities,

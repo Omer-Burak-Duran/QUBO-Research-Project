@@ -20,7 +20,7 @@ The current baseline that should be preserved is:
 - `MaxCut -> QAOA initialization comparison (interpolation / warm_start / random) -> saved summary, traces, and plots`
 - `MaxCut -> QAOA initialization comparison -> CSV tables + approximation/runtime/evaluation/parameter plots`
 
-Do not break those two validated paths in future passes.
+Do not break these validated paths in future passes.
 
 ## Milestone coverage
 
@@ -49,11 +49,6 @@ Do not break those two validated paths in future passes.
   - plot support
 - `Milestone 4: Classical truth baseline`
   - brute-force exact solver
-- `Milestone 9: Minimum Vertex Cover`
-  - QUBO encoding implemented with uncovered-edge penalties
-  - decoder returns selected vertices, uncovered edges, cover size, and feasibility
-  - brute-force validation added on tiny instances
-  - config-driven classical MVC example runs through the current artifact pipeline
 - `Milestone 6: QAOA exact-statevector implementation`
   - QAOA circuit builder
   - exact expectation evaluation
@@ -81,6 +76,11 @@ Do not break those two validated paths in future passes.
   - CSV summary tables now exist:
     - `tables/run_metrics.csv`
     - `tables/aggregate_metrics.csv`
+- `Milestone 9: Minimum Vertex Cover`
+  - QUBO encoding implemented with uncovered-edge penalties
+  - decoder returns selected vertices, uncovered edges, cover size, and feasibility
+  - brute-force validation added on tiny instances
+  - config-driven classical MVC example runs through the current artifact pipeline
 
 ### Partially covered
 
@@ -172,7 +172,8 @@ Do not break those two validated paths in future passes.
 ## Important assumptions and design decisions
 
 - `project-milestones.md` is the implementation-order source of truth.
-- `project-explanation.md` is used for architecture and design interpretation.
+- `project-explanation.md` is used for architecture and design interpretation, not as an exact file inventory.
+- `project-current-progress.md` should be treated as the authoritative current-state handoff document.
 - QUBO remains the canonical internal representation.
 - The first quantum path uses a custom transparent QAOA implementation instead of a higher-level black-box wrapper.
 - QAOA parameter order is:
@@ -268,6 +269,7 @@ Outcome at last validation:
 ## What a new agent should preserve
 
 - Keep the current package layout and modular boundaries.
+- Keep `project-current-progress.md` aligned with the actual validated repository state.
 - Keep `run_experiment_from_config()` as the main run entry point unless there is a strong reason to change it.
 - Keep the current CLI command path working:
   - `python -m qubo_vqa.cli run --config ...`
