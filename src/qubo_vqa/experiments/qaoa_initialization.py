@@ -9,18 +9,27 @@ from typing import Any
 import numpy as np
 import yaml
 
-from qubo_vqa.analysis.metrics import summarize_solver_result
-from qubo_vqa.analysis.plots import plot_energy_trace
+from qubo_vqa.analysis.metrics import (
+    aggregate_qaoa_initialization_runs,
+    compute_approximation_ratio,
+    summarize_solver_result,
+)
+from qubo_vqa.analysis.plots import (
+    plot_energy_trace,
+    plot_metric_by_depth,
+    plot_qaoa_parameter_values_by_depth,
+)
 from qubo_vqa.experiments.config import OutputConfig, ProblemConfig
 from qubo_vqa.experiments.logging import create_run_directory
 from qubo_vqa.experiments.runner import build_problem
+from qubo_vqa.solvers.classical.brute_force import BruteForceSolver
 from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig
 from qubo_vqa.solvers.quantum.initialization import (
     SUPPORTED_QAOA_INITIALIZATIONS,
     QAOAInitializationConfig,
 )
 from qubo_vqa.solvers.quantum.qaoa import QAOAOptimizerConfig, QAOASolver
-from qubo_vqa.utils.io import write_json
+from qubo_vqa.utils.io import write_csv_rows, write_json
 from qubo_vqa.utils.random import set_global_seed
 
 
@@ -147,6 +156,7 @@ def _run_single_qaoa_strategy(
     *,
     problem,
     qubo_model,
+    optimum_objective_value: float,
     rep: int,
     requested_strategy: str,
     initialization_strategy: str,
@@ -187,53 +197,18 @@ def _run_single_qaoa_strategy(
             "previous_parameter_count": (
                 0 if previous_parameters is None else int(previous_parameters.size)
             ),
+            "parameter_count": len(result.metadata["final_parameters"]),
+            "optimum_objective_value": optimum_objective_value,
+            "approximation_ratio": compute_approximation_ratio(
+                float(result.decoded_solution.objective_value),
+                optimum_objective_value,
+            ),
             "final_parameters": list(result.metadata["final_parameters"]),
             "initial_parameters": list(result.metadata["initial_parameters"]),
             "optimization_success": bool(result.metadata["optimization_success"]),
         }
     )
     return metrics
-
-
-def _aggregate_run_metrics(run_metrics: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Aggregate run metrics by strategy and QAOA depth."""
-    grouped: dict[tuple[str, int], list[dict[str, Any]]] = {}
-    for record in run_metrics:
-        key = (str(record["requested_strategy"]), int(record["rep"]))
-        grouped.setdefault(key, []).append(record)
-
-    aggregates: list[dict[str, Any]] = []
-    for strategy, rep in sorted(grouped):
-        records = grouped[(strategy, rep)]
-        objective_values = np.asarray(
-            [float(record["objective_value"]) for record in records],
-            dtype=float,
-        )
-        evaluations = np.asarray([int(record["evaluations"]) for record in records], dtype=float)
-        runtimes = np.asarray([float(record["runtime_seconds"]) for record in records], dtype=float)
-        best_expectations = np.asarray(
-            [
-                float(record.get("best_expectation_energy", record["best_energy"]))
-                for record in records
-            ],
-            dtype=float,
-        )
-        aggregates.append(
-            {
-                "strategy": strategy,
-                "rep": rep,
-                "num_runs": len(records),
-                "best_objective_value": float(np.max(objective_values)),
-                "mean_objective_value": float(np.mean(objective_values)),
-                "best_energy": float(
-                    np.min([float(record["best_energy"]) for record in records])
-                ),
-                "mean_best_expectation_energy": float(np.mean(best_expectations)),
-                "mean_evaluations": float(np.mean(evaluations)),
-                "mean_runtime_seconds": float(np.mean(runtimes)),
-            }
-        )
-    return aggregates
 
 
 def run_qaoa_initialization_comparison(
@@ -248,6 +223,10 @@ def run_qaoa_initialization_comparison(
     set_global_seed(config.seed)
     problem = build_problem(_ProblemCarrier(seed=config.seed, problem=config.problem))
     qubo_model = problem.to_qubo_model()
+    exact_result = BruteForceSolver(
+        max_variables=max(config.max_variables, qubo_model.num_variables())
+    ).solve(qubo_model, problem.decode_bitstring)
+    optimum_objective_value = float(exact_result.decoded_solution.objective_value)
     run_directory = create_run_directory(config.output.directory, config.output.tag)
 
     run_metrics: list[dict[str, Any]] = []
@@ -259,6 +238,7 @@ def run_qaoa_initialization_comparison(
                         _run_single_qaoa_strategy(
                             problem=problem,
                             qubo_model=qubo_model,
+                            optimum_objective_value=optimum_objective_value,
                             rep=rep,
                             requested_strategy="random",
                             initialization_strategy="random",
@@ -283,6 +263,7 @@ def run_qaoa_initialization_comparison(
                 metrics = _run_single_qaoa_strategy(
                     problem=problem,
                     qubo_model=qubo_model,
+                    optimum_objective_value=optimum_objective_value,
                     rep=rep,
                     requested_strategy="warm_start",
                     initialization_strategy=initialization_strategy,
@@ -303,6 +284,7 @@ def run_qaoa_initialization_comparison(
                 _run_single_qaoa_strategy(
                     problem=problem,
                     qubo_model=qubo_model,
+                    optimum_objective_value=optimum_objective_value,
                     rep=rep,
                     requested_strategy=strategy,
                     initialization_strategy=strategy,
@@ -315,11 +297,50 @@ def run_qaoa_initialization_comparison(
                 )
             )
 
+    aggregate_metrics = aggregate_qaoa_initialization_runs(run_metrics)
+    write_csv_rows(run_directory / "tables" / "run_metrics.csv", run_metrics)
+    write_csv_rows(run_directory / "tables" / "aggregate_metrics.csv", aggregate_metrics)
+    plot_metric_by_depth(
+        aggregate_metrics,
+        metric_key="mean_approximation_ratio",
+        output_path=run_directory / "plots" / "approximation_ratio_vs_depth.png",
+        title="QAOA approximation ratio vs depth",
+        ylabel="Mean approximation ratio",
+    )
+    plot_metric_by_depth(
+        aggregate_metrics,
+        metric_key="mean_best_expectation_energy",
+        output_path=run_directory / "plots" / "best_expectation_energy_vs_depth.png",
+        title="QAOA expectation energy vs depth",
+        ylabel="Mean best expectation energy",
+    )
+    plot_metric_by_depth(
+        aggregate_metrics,
+        metric_key="mean_runtime_seconds",
+        output_path=run_directory / "plots" / "runtime_vs_depth.png",
+        title="QAOA runtime vs depth",
+        ylabel="Mean runtime (s)",
+    )
+    plot_metric_by_depth(
+        aggregate_metrics,
+        metric_key="mean_evaluations",
+        output_path=run_directory / "plots" / "evaluations_vs_depth.png",
+        title="QAOA evaluations vs depth",
+        ylabel="Mean function evaluations",
+    )
+    plot_qaoa_parameter_values_by_depth(run_metrics, run_directory / "plots")
+
     summary = {
         "experiment_name": config.experiment_name,
         "config_path": str(config_path),
         "config": asdict(config),
-        "aggregates": _aggregate_run_metrics(run_metrics),
+        "exact_reference": {
+            "best_bitstring": list(exact_result.best_bitstring),
+            "best_energy": exact_result.best_energy,
+            "objective_value": optimum_objective_value,
+            "solver_name": exact_result.solver_name,
+        },
+        "aggregates": aggregate_metrics,
         "runs": run_metrics,
     }
     write_json(run_directory / "config.json", asdict(config))

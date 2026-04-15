@@ -46,10 +46,18 @@ def test_initialization_comparison_creates_summary_artifacts(
     assert (run_directory / "config.json").exists()
     assert (run_directory / "summary.json").exists()
     assert (run_directory / "artifacts" / "qubo_model.json").exists()
+    assert (run_directory / "tables" / "run_metrics.csv").exists()
+    assert (run_directory / "tables" / "aggregate_metrics.csv").exists()
     assert (run_directory / "traces" / "warm_start-rep2-trial0.json").exists()
     assert (run_directory / "plots" / "warm_start-rep2-trial0_energy_trace.png").exists()
+    assert (run_directory / "plots" / "approximation_ratio_vs_depth.png").exists()
+    assert (run_directory / "plots" / "runtime_vs_depth.png").exists()
+    assert (run_directory / "plots" / "evaluations_vs_depth.png").exists()
+    assert (run_directory / "plots" / "best_expectation_energy_vs_depth.png").exists()
+    assert (run_directory / "plots" / "final_parameters_warm_start.png").exists()
 
     summary = json.loads((run_directory / "summary.json").read_text(encoding="utf-8"))
+    assert summary["exact_reference"]["objective_value"] == 4.0
     assert len(summary["runs"]) == 8
     warm_start_rep2 = next(
         record
@@ -58,3 +66,4 @@ def test_initialization_comparison_creates_summary_artifacts(
     )
     assert warm_start_rep2["initialization_strategy_used"] == "warm_start"
     assert warm_start_rep2["previous_parameter_count"] == 2
+    assert warm_start_rep2["approximation_ratio"] == 1.0

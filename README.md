@@ -18,6 +18,7 @@ This repository currently implements the first clean vertical slice:
 - a config-driven experiment runner with saved JSON artifacts and plots,
 - an exact-statevector QAOA path for small MaxCut instances,
 - a config-driven QAOA initialization comparison workflow,
+- standard QAOA comparison tables and benchmark-style plots for the current MaxCut path,
 - starter scaffolding for later VQE, MVC, TSP, and landscape work.
 
 ## Installation
@@ -48,7 +49,7 @@ python -m qubo_vqa.cli compare-initializations --config configs/experiments/qaoa
 
 This comparison command benchmarks `interpolation`, `warm_start`, and `random`
 initialization on the current MaxCut statevector path and saves grouped metrics,
-per-run traces, and energy-trace plots under `data/results/`.
+CSV tables, per-run traces, and benchmark-style plots under `data/results/`.
 
 ## Run the tests
 

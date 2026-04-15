@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from qubo_vqa.core.result import SolverResult
 
 
@@ -21,3 +23,54 @@ def summarize_solver_result(result: SolverResult) -> dict[str, float | int | str
     if "best_dominant_probability" in result.metadata:
         metrics["best_dominant_probability"] = float(result.metadata["best_dominant_probability"])
     return metrics
+
+
+def compute_approximation_ratio(
+    objective_value: float,
+    optimum_objective_value: float,
+) -> float:
+    """Return the approximation ratio against a positive optimum objective."""
+    if optimum_objective_value <= 0.0:
+        msg = "optimum_objective_value must be positive to compute an approximation ratio."
+        raise ValueError(msg)
+    return float(objective_value / optimum_objective_value)
+
+
+def aggregate_qaoa_initialization_runs(
+    run_metrics: list[dict[str, Any]],
+) -> list[dict[str, float | int | str]]:
+    """Aggregate QAOA initialization runs by strategy and QAOA depth."""
+    grouped: dict[tuple[str, int], list[dict[str, Any]]] = {}
+    for record in run_metrics:
+        key = (str(record["requested_strategy"]), int(record["rep"]))
+        grouped.setdefault(key, []).append(record)
+
+    aggregates: list[dict[str, float | int | str]] = []
+    for strategy, rep in sorted(grouped):
+        records = grouped[(strategy, rep)]
+        objective_values = [float(record["objective_value"]) for record in records]
+        approximation_ratios = [float(record["approximation_ratio"]) for record in records]
+        evaluations = [int(record["evaluations"]) for record in records]
+        runtimes = [float(record["runtime_seconds"]) for record in records]
+        best_expectations = [
+            float(record.get("best_expectation_energy", record["best_energy"]))
+            for record in records
+        ]
+        aggregates.append(
+            {
+                "strategy": strategy,
+                "rep": rep,
+                "num_runs": len(records),
+                "best_objective_value": max(objective_values),
+                "mean_objective_value": sum(objective_values) / len(objective_values),
+                "best_approximation_ratio": max(approximation_ratios),
+                "mean_approximation_ratio": sum(approximation_ratios) / len(approximation_ratios),
+                "best_energy": min(float(record["best_energy"]) for record in records),
+                "mean_best_expectation_energy": sum(best_expectations) / len(best_expectations),
+                "mean_evaluations": sum(evaluations) / len(evaluations),
+                "mean_runtime_seconds": sum(runtimes) / len(runtimes),
+                "success_rate": sum(bool(record["optimization_success"]) for record in records)
+                / len(records),
+            }
+        )
+    return aggregates

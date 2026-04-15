@@ -8,6 +8,7 @@ The repository is currently at a stable intermediate stage.
 - The first classical vertical slice works end to end for MaxCut.
 - The first quantum vertical slice also works end to end for MaxCut via exact-statevector QAOA.
 - A config-driven Milestone 7 workflow now compares QAOA initialization strategies on that same MaxCut path.
+- Milestone 8 reporting is now implemented for that comparison path with CSV tables and standard QAOA benchmark plots.
 - Later milestones such as MVC, VQE, shot-based/noisy backends, OpenJij, and landscape analysis are still deferred or scaffolded.
 
 The current baseline that should be preserved is:
@@ -15,6 +16,7 @@ The current baseline that should be preserved is:
 - `MaxCut -> QUBO -> Ising -> brute force -> saved outputs`
 - `MaxCut -> QUBO -> Ising -> QAOA (statevector) -> saved outputs`
 - `MaxCut -> QAOA initialization comparison (interpolation / warm_start / random) -> saved summary, traces, and plots`
+- `MaxCut -> QAOA initialization comparison -> CSV tables + approximation/runtime/evaluation/parameter plots`
 
 Do not break those two validated paths in future passes.
 
@@ -58,6 +60,20 @@ Do not break those two validated paths in future passes.
   - config-driven comparison workflow exists:
     - `python -m qubo_vqa.cli compare-initializations --config ...`
   - comparison outputs include grouped summary metrics, per-run traces, and trace plots
+- `Milestone 8: Plotting and benchmark metrics`
+  - standard comparison plots now exist for the first QAOA benchmark path:
+    - approximation ratio vs depth
+    - expectation energy vs depth
+    - runtime vs depth
+    - function evaluations vs depth
+    - final parameter values by depth and strategy
+  - exact-reference metrics are included:
+    - brute-force optimum objective value
+    - per-run approximation ratio
+    - grouped success rates
+  - CSV summary tables now exist:
+    - `tables/run_metrics.csv`
+    - `tables/aggregate_metrics.csv`
 
 ### Partially covered
 
@@ -77,10 +93,6 @@ Do not break those two validated paths in future passes.
     - CSV histories
     - multi-run sweep structure
     - richer benchmark aggregation
-- `Milestone 8: Plotting and benchmark metrics`
-  - basic energy-trace and partition plots exist
-  - initialization comparison outputs now include grouped summaries and per-run trace plots
-  - publication-style benchmark plots and summary tables do not yet exist
 
 ### Scaffolded only
 
@@ -112,10 +124,19 @@ Do not break those two validated paths in future passes.
 - problem: MaxCut
 - solver family: exact-statevector QAOA
 - compared strategies: `interpolation`, `warm_start`, `random`
-- output: `summary.json`, per-run `traces/*.json`, per-run energy-trace plots, QUBO artifact
+- output:
+  - `summary.json`
+  - `tables/run_metrics.csv`
+  - `tables/aggregate_metrics.csv`
+  - per-run `traces/*.json`
+  - per-run energy-trace plots
+  - aggregate benchmark plots
+  - QUBO artifact
 - behavior validated in the current pass:
   - warm-start at higher depth consumes previous optimized parameters
   - all strategy/depth groups in the starter 4-cycle comparison recovered objective value `4.0`
+  - exact optimum reference is recorded from brute force
+  - depth-2 `warm_start` still gives the strongest expectation among starter runs
 
 ## Current limitations
 
@@ -124,6 +145,7 @@ Do not break those two validated paths in future passes.
 - `VQESolver` is still a scaffold.
 - QAOA currently supports only exact-statevector execution.
 - The initialization comparison workflow is currently limited to the MaxCut statevector path.
+- Milestone 8 plots currently summarize one benchmark instance/config at a time rather than a broader multi-instance campaign.
 - Some deeper QAOA comparison runs can hit the optimizer iteration cap before reporting `optimization_success=true`, even when the best decoded bitstring is already optimal.
 - Shot-based and noisy execution are not implemented yet.
 - Experiment configs are plain YAML; Hydra is not in use yet.
@@ -197,7 +219,7 @@ Outcome at last validation:
 
 - command succeeded
 - wrote a timestamped folder under `data/results/`
-- saved `summary.json`, `traces/`, and per-run energy-trace plots
+- saved `summary.json`, `tables/`, `traces/`, and both per-run plus aggregate plots
 - all starter comparison groups reached objective value `4.0` on the 4-cycle example
 - the current summary showed strongest depth-2 expectation from `warm_start`:
   - `warm_start rep=2`: about `-3.9948`
@@ -230,11 +252,11 @@ Outcome at last validation:
 
 The exact next milestone is:
 
-- `Milestone 8: Plotting and benchmark metrics`
+- `Milestone 9: Minimum Vertex Cover`
 
 The most natural next implementation pass is:
 
-1. strengthen `Milestone 8` by turning the initialization comparison outputs into clearer benchmark tables/plots,
-2. then implement `Milestone 9` Minimum Vertex Cover on the same pipeline,
-3. then move to `Milestone 10` VQE,
-4. only after that expand into shot-based/noisy and landscape milestones.
+1. implement `Milestone 9` Minimum Vertex Cover on the same QUBO -> solver -> artifact pipeline,
+2. then move to `Milestone 10` VQE,
+3. then expand into shot-based/noisy execution,
+4. only after that move into landscape-analysis milestones.
