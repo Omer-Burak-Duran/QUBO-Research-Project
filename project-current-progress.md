@@ -16,7 +16,8 @@ The repository is currently at a stable intermediate stage with both classical a
 - A first preserved Milestone 12 landscape-analysis workflow now exists for a small MaxCut QAOA/VQE study.
 - An OpenJij classical baseline now works end to end on the preserved small MaxCut and MVC paths.
 - A config-driven solver comparison workflow now benchmarks brute force, OpenJij, QAOA, and VQE on the shared MaxCut starter instance.
-- Later milestones such as TSP completion and broader benchmark campaigns are still deferred.
+- Config-driven benchmark campaigns now cover preserved starter, broader moderate, and backend-focused benchmark slices for MaxCut and MVC with grouped aggregate tables plus interpretation notes.
+- All 15 planned milestones are now covered at repository level; broader research-scale datasets and TSP completion remain future extensions rather than uncovered milestone work.
 
 The current baseline that should be preserved is:
 
@@ -35,6 +36,7 @@ The current baseline that should be preserved is:
 - `MaxCut -> OpenJij -> saved outputs`
 - `Minimum Vertex Cover -> OpenJij -> saved outputs`
 - `MaxCut -> solver comparison (brute_force / openjij / qaoa / vqe) -> saved summary, tables, traces, and plots`
+- `Benchmark campaigns -> starter + moderate + backend-focused MaxCut/MVC benchmark slices -> saved summary, grouped tables, notes, plots, and nested run artifacts`
 
 Do not break these validated paths in future passes.
 
@@ -183,13 +185,62 @@ Do not break these validated paths in future passes.
     - for the starter MaxCut family, brute force, OpenJij, QAOA, and VQE all produced comparable result records and comparison tables
     - the shared comparison summary recorded objective value `4.0` for all four solver families on the preserved 4-cycle instance
 
+- `Milestone 14: Full benchmark campaign`
+  - `experiments/sweeps.py` now provides a config-driven benchmark campaign workflow
+  - campaigns now support both:
+    - explicit problem/solver cases
+    - sweep-expanded problem/solver definitions with product or zip expansion
+  - campaigns reuse the preserved problem/solver builders and standard per-run artifact writer
+  - outputs now include:
+    - nested per-run result folders under `runs/`
+    - `tables/run_metrics.csv`
+    - `tables/case_aggregates.csv`
+    - `tables/solver_family_aggregates.csv`
+    - `tables/problem_references.csv`
+    - `tables/problem_family_aggregates.csv`
+    - `tables/problem_size_aggregates.csv`
+    - `tables/backend_aggregates.csv`
+    - `tables/qaoa_depth_aggregates.csv`
+    - `tables/vqe_depth_aggregates.csv`
+    - benchmark aggregate plots
+    - `notes.md`
+  - validated campaign configs now exist:
+    - `configs/experiments/starter_benchmark_campaign.yaml`
+    - `configs/experiments/moderate_benchmark_campaign.yaml`
+    - `configs/experiments/backend_benchmark_campaign.yaml`
+  - validated repository-level behavior in the current pass:
+    - the starter campaign executed `2` preserved problem cases across `6` solver cases for `12` total runs
+    - the moderate campaign executed `6` problem cases across `8` solver cases for `48` total runs
+    - the backend-focused campaign executed `2` problem cases across `8` solver cases for `16` total runs
+    - all validated campaign commands emitted grouped tables, notes, plots, and nested run artifacts successfully
+- `Milestone 15: Final interpretation layer`
+  - the benchmark campaign now emits a repository-level interpretation layer through:
+    - `summary.json`
+    - `notes.md`
+  - the current interpretation summarizes:
+    - encoding stability
+    - best solver per problem
+    - QAOA vs VQE comparisons
+    - structured vs hardware-efficient VQE comparisons
+    - QAOA initialization comparisons
+    - grouped scaling slices by problem size
+    - backend-effect summaries
+    - status-vs-solution-quality gaps
+    - bottleneck cases
+    - optional linked landscape-summary context
+  - validated interpretation signal in the current pass:
+    - the moderate and backend-focused campaigns both emitted the richer grouped aggregate sections in `summary.json`
+    - the interpretation notes now expose real status-quality gaps for cases where decoded solution quality and optimizer-reported success diverge
+    - backend-focused summaries now compare statevector, shot-based, and noisy benchmark slices directly
+
 ### Milestone Status Check
 
-- `Milestones 0` through `13` are now fully implemented and fully covered against the definitions in `project-milestones.md`.
+- `Milestones 0` through `15` are now implemented and fully covered at repository level against the intended definitions in `project-milestones.md`.
 
 ### Scaffolded only
 
-- `Milestone 14+:` later benchmark and interpretation milestones
+- TSP remains intentionally deferred as a future benchmark extension
+- broader report-scale or publication-scale campaign datasets remain optional follow-on work
 
 ## What works end to end right now
 
@@ -457,6 +508,45 @@ Do not break these validated paths in future passes.
     - `qaoa`: about `0.3711 s`
     - `vqe`: about `0.0358 s`
 
+### Benchmark campaign validated path
+
+- workflow surface:
+  - `python -m qubo_vqa.cli run-benchmark-campaign --config ...`
+- validated campaign configs:
+  - `configs/experiments/starter_benchmark_campaign.yaml`
+  - `configs/experiments/moderate_benchmark_campaign.yaml`
+  - `configs/experiments/backend_benchmark_campaign.yaml`
+- output:
+  - `summary.json`
+  - `notes.md`
+  - `tables/run_metrics.csv`
+  - `tables/case_aggregates.csv`
+  - `tables/solver_family_aggregates.csv`
+  - `tables/problem_references.csv`
+  - `tables/problem_family_aggregates.csv`
+  - `tables/problem_size_aggregates.csv`
+  - `tables/backend_aggregates.csv`
+  - `tables/qaoa_depth_aggregates.csv`
+  - `tables/vqe_depth_aggregates.csv`
+  - `plots/optimality_ratio_by_case.png`
+  - `plots/runtime_by_case.png`
+  - `plots/optimality_ratio_by_solver_family.png`
+  - `plots/optimality_ratio_by_problem_family.png`
+  - `plots/optimality_ratio_by_backend.png`
+  - nested per-run artifacts under `runs/`
+- behavior validated in the current pass:
+  - the starter campaign executed `12` total runs across `2` problem cases and `6` solver cases
+  - the moderate campaign executed `48` total runs across `6` problem cases and `8` solver cases
+  - the backend-focused campaign executed `16` total runs across `2` problem cases and `8` solver cases
+  - the moderate campaign emitted grouped slices over:
+    - problem family
+    - problem size
+    - backend mode
+    - QAOA depth
+    - VQE depth
+  - the backend-focused campaign emitted direct statevector / shot-based / noisy summaries on shared MaxCut and MVC cases
+  - the generated interpretation notes now expose status-quality gaps rather than collapsing them into one success signal
+
 ## Current limitations
 
 - `MaxCut` and `MinimumVertexCoverInstance` are currently implemented as working problems.
@@ -476,9 +566,11 @@ Do not break these validated paths in future passes.
 - The cross-solver comparison workflow is currently validated on the MaxCut starter family only.
 - Some deeper QAOA comparison runs can hit the optimizer iteration cap before reporting `optimization_success=true`, even when the best decoded bitstring is already optimal.
 - The current preserved finite-shot benchmark path is QAOA on MaxCut; shot-based VQE is runnable but still needs tuning before it should be treated as equally strong.
+- In the benchmark campaigns, optimizer-reported success can still diverge from decoded solution quality, especially for some VQE and deeper QAOA cases.
+- Benchmark campaigns are now repository-complete, but still intentionally moderate in size; they are not meant to be final publication-scale sweeps checked into the repository.
 - Experiment configs are plain YAML; Hydra is not in use yet.
 - Logging is good for single runs, but sweep/benchmark management is still minimal.
-- Tests are meaningful for the current scope and now include shot-based, noisy, first-pass landscape-analysis, OpenJij, and solver-comparison coverage.
+- Tests are meaningful for the current scope and now include shot-based, noisy, first-pass landscape-analysis, OpenJij, solver-comparison, benchmark-campaign, and campaign-summary coverage.
 
 ## Important assumptions and design decisions
 
@@ -499,6 +591,12 @@ Do not break these validated paths in future passes.
 - `shot_based` currently means seeded multinomial sampling from the exact noiseless basis distribution.
 - `noisy` currently means Aer-backed finite-shot simulation with a named noise model.
 - OpenJij is now the preserved classical sampling baseline for the current milestone-13 paths.
+- The benchmark campaign normalizes semantic objective quality with an `optimality_ratio` metric:
+  - maximization problems use `objective / optimum`
+  - minimization problems use `optimum / objective`
+- Solver completion and solution quality are now tracked separately in benchmark campaigns:
+  - `solver_success` reflects optimizer/sampler completion status
+  - `solution_quality_success` reflects whether the decoded solution reached the exact-reference optimum when available
 - `qiskit` and `qiskit-aer` remain optional extras in `pyproject.toml`.
 - `openjij` remains an optional extra under the classical dependency group in `pyproject.toml`.
 - `requirements.txt` currently installs the full local development environment with quantum support:
@@ -523,7 +621,7 @@ These commands were revalidated using the repository virtual environment and sho
 
 Outcome at last validation:
 
-- `38 passed`
+- `44 passed`
 
 ### Run the classical MaxCut example
 
@@ -753,6 +851,54 @@ Outcome at last validation:
   - `vqe`
 - the comparison summary recorded success rate `1.0` for all four validated solver cases
 
+### Run the benchmark-campaign example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/starter_benchmark_campaign.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- executed `12` benchmark runs across `2` preserved problem cases and `6` solver cases
+- all starter runs recovered the optimal decoded objective value on the preserved cases
+- emitted aggregate tables, interpretation notes, benchmark plots, and nested per-run result artifacts
+- exposed the current VQE status limitation:
+  - decoded objectives were optimal
+  - `optimization_success` remained `false` on the starter VQE campaign cases
+
+### Run the moderate benchmark-campaign example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/moderate_benchmark_campaign.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- executed `48` benchmark runs across `6` problem cases and `8` solver cases
+- emitted grouped benchmark tables over problem family, problem size, backend mode, QAOA depth, and VQE depth
+- produced interpretation notes exposing optimizer-status vs decoded-solution-quality gaps on the broader statevector benchmark slice
+
+### Run the backend benchmark-campaign example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- executed `16` benchmark runs across `2` problem cases and `8` solver cases
+- produced direct benchmark summaries for:
+  - `statevector`
+  - `shot_based`
+  - `noisy`
+- emitted backend aggregate tables and benchmark plots for the preserved small MaxCut and MVC backend slice
+
 ### Run lint/integrity check
 
 ```powershell
@@ -791,6 +937,10 @@ Outcome at last validation:
   - `python -m qubo_vqa.cli run --config configs/experiments/openjij_min_vertex_cover.yaml`
 - Keep the solver-comparison command working:
   - `python -m qubo_vqa.cli compare-solvers --config configs/experiments/maxcut_solver_comparison.yaml`
+- Keep the benchmark-campaign command working:
+  - `python -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/starter_benchmark_campaign.yaml`
+  - `python -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/moderate_benchmark_campaign.yaml`
+  - `python -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml`
 - Keep the preserved MVC quantum example paths working:
   - `python -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml`
   - `python -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml`
@@ -799,14 +949,11 @@ Outcome at last validation:
 
 ## What remains next
 
-The exact next milestone is now:
+All planned milestones are now covered at repository level.
 
-- `Milestone 14: Full benchmark campaign`
+The most natural next implementation passes are optional extensions beyond the 15-milestone plan:
 
-The most natural next implementation pass is:
-
-1. define a clean batched benchmark workflow over instance families, seeds, and solver settings,
-2. reuse the preserved OpenJij, QAOA, VQE, and brute-force paths rather than creating ad hoc scripts,
-3. save aggregated CSV summaries that can feed later report figures directly,
-4. extend the current starter comparisons from one instance to a small but systematic benchmark grid,
-5. keep the current single-instance validated paths stable while adding the first broader campaign layer.
+1. broaden benchmark campaigns toward larger publication-scale datasets and more graph families,
+2. improve VQE optimizer-status handling so success metrics align more cleanly with decoded solution quality,
+3. deepen automatic linkage between campaign summaries and landscape-analysis outputs,
+4. add stronger sweep-management ergonomics if campaigns become much larger than the current repository-level validation set.

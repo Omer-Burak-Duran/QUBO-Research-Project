@@ -1,0 +1,70 @@
+experiment_name: backend_benchmark_campaign
+seed: 7
+
+campaign:
+  exact_reference_max_variables: 20
+  problems:
+    - label: maxcut-cycle-4
+      name: maxcut
+      parameters:
+        graph_family: cycle
+        num_nodes: 4
+        weight: 1.0
+    - label: mvc-cycle-4
+      name: minimum_vertex_cover
+      parameters:
+        graph_family: cycle
+        num_nodes: 4
+        penalty_strength: 2.0
+  solvers:
+    - label: brute_force
+      name: brute_force
+      parameters:
+        max_variables: 20
+    - label: openjij_sa
+      name: openjij
+      parameters:
+        sampler: sa
+        num_reads: 64
+        num_sweeps: 1000
+        max_variables: 128
+  solver_sweeps:
+    - name: qaoa
+      label_template: "qaoa_{backend_mode}"
+      mode: zip
+      base_parameters:
+        reps: 1
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 35
+          tol: 1.0e-3
+        initialization:
+          strategy: interpolation
+      sweep:
+        backend.mode: [statevector, shot_based, noisy]
+        backend.shots: [null, 2048, 2048]
+        backend.noise_model_name: [null, null, depolarizing_readout]
+    - name: vqe
+      label_template: "vqe_{backend_mode}"
+      mode: zip
+      base_parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 1
+        optimizer:
+          name: COBYLA
+          maxiter: 60
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+      sweep:
+        backend.mode: [statevector, shot_based, noisy]
+        backend.shots: [null, 2048, 2048]
+        backend.noise_model_name: [null, null, depolarizing_readout]
+
+output:
+  directory: data/results
+  tag: backend-benchmark-campaign

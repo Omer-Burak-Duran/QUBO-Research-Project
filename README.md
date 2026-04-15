@@ -24,6 +24,7 @@ This repository currently implements the current stable foundation:
 - Aer-backed noisy quantum paths for the current small MaxCut examples,
 - a config-driven backend comparison workflow for exact vs shot-based vs noisy QAOA,
 - a config-driven solver comparison workflow for brute force vs OpenJij vs QAOA vs VQE,
+- config-driven benchmark campaigns with grouped aggregate tables and interpretation notes,
 - a config-driven QAOA initialization comparison workflow,
 - standard QAOA comparison tables and benchmark-style plots for the current MaxCut path,
 - a first preserved landscape-analysis workflow for the current MaxCut path,
@@ -157,6 +158,44 @@ This Milestone 13 workflow benchmarks the shared starter MaxCut instance across
 `brute_force`, `openjij`, `qaoa`, and `vqe`, and saves grouped comparison
 metrics, CSV tables, per-run traces, and solver-comparison plots.
 
+## Run the starter benchmark campaign
+
+```bash
+python -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/starter_benchmark_campaign.yaml
+```
+
+This fast Milestone 14/15 smoke path benchmarks preserved MaxCut and Minimum
+Vertex Cover starter cases across brute force, OpenJij, QAOA, and VQE variants.
+
+## Run the moderate benchmark campaign
+
+```bash
+python -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/moderate_benchmark_campaign.yaml
+```
+
+This repository-level benchmark path expands the preserved campaign to multiple
+problem sizes/families plus QAOA/VQE depth variants while keeping exact
+references feasible.
+
+## Run the backend-focused benchmark campaign
+
+```bash
+python -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml
+```
+
+This campaign emphasizes exact vs shot-based vs noisy backend behavior across a
+shared small MaxCut/MVC benchmark slice.
+
+All benchmark-campaign runs save:
+
+- nested per-run artifacts under `runs/`
+- `tables/run_metrics.csv`
+- grouped aggregate tables for cases, solver families, problem families, sizes,
+  backends, and QAOA/VQE depth slices
+- `summary.json`
+- `notes.md`
+- aggregate benchmark plots under `plots/`
+
 ## Run the first landscape-analysis example
 
 ```bash
@@ -196,4 +235,7 @@ The validated repository commands in this project have been run through the virt
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-initializations --config configs/experiments/qaoa_initialization_comparison.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-solvers --config configs/experiments/maxcut_solver_comparison.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/starter_benchmark_campaign.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/moderate_benchmark_campaign.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml
 ```

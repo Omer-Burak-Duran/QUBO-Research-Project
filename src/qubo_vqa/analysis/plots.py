@@ -135,6 +135,7 @@ def plot_metric_by_category(
     output_path: Path,
     title: str,
     ylabel: str,
+    rotation: float = 0.0,
 ) -> None:
     """Plot one metric as a bar chart across categorical experiment groups."""
     ensure_directory(output_path.parent)
@@ -149,14 +150,17 @@ def plot_metric_by_category(
     labels = [str(record[category_key]) for record in records]
     values = [float(record[metric_key]) for record in records]
 
-    fig, axis = plt.subplots(figsize=(7, 4.5))
+    figure_width = max(7.0, 0.55 * len(labels))
+    fig, axis = plt.subplots(figsize=(figure_width, 4.5))
     axis.bar(labels, values)
     axis.set_title(title)
     axis.set_xlabel(category_key.replace("_", " ").title())
     axis.set_ylabel(ylabel)
+    if rotation != 0.0:
+        axis.tick_params(axis="x", labelrotation=rotation)
+        fig.subplots_adjust(bottom=0.3)
     axis.grid(True, axis="y", alpha=0.3)
-    fig.tight_layout()
-    fig.savefig(output_path)
+    fig.savefig(output_path, bbox_inches="tight")
     plt.close(fig)
 
 

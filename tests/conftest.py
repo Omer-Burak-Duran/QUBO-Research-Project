@@ -119,6 +119,24 @@ def solver_comparison_config_path() -> Path:
 
 
 @pytest.fixture()
+def benchmark_campaign_config_path() -> Path:
+    """Return the path to the starter benchmark campaign config."""
+    return Path("configs/experiments/starter_benchmark_campaign.yaml")
+
+
+@pytest.fixture()
+def moderate_benchmark_campaign_config_path() -> Path:
+    """Return the path to the broader statevector benchmark campaign config."""
+    return Path("configs/experiments/moderate_benchmark_campaign.yaml")
+
+
+@pytest.fixture()
+def backend_benchmark_campaign_config_path() -> Path:
+    """Return the path to the backend-focused benchmark campaign config."""
+    return Path("configs/experiments/backend_benchmark_campaign.yaml")
+
+
+@pytest.fixture()
 def mvc_config_path() -> Path:
     """Return the path to the starter Minimum Vertex Cover config."""
     return Path("configs/experiments/classical_min_vertex_cover.yaml")

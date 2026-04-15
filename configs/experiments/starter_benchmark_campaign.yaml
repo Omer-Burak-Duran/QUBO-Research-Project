@@ -1,0 +1,88 @@
+experiment_name: starter_benchmark_campaign
+seed: 7
+
+campaign:
+  exact_reference_max_variables: 20
+  problems:
+    - label: maxcut-cycle-4
+      name: maxcut
+      parameters:
+        graph_family: cycle
+        num_nodes: 4
+        weight: 1.0
+    - label: mvc-cycle-4
+      name: minimum_vertex_cover
+      parameters:
+        graph_family: cycle
+        num_nodes: 4
+        penalty_strength: 2.0
+  solvers:
+    - label: brute_force
+      name: brute_force
+      parameters:
+        max_variables: 20
+    - label: openjij_sa
+      name: openjij
+      parameters:
+        sampler: sa
+        num_reads: 64
+        num_sweeps: 1000
+        max_variables: 128
+    - label: qaoa_interpolation_p1
+      name: qaoa
+      parameters:
+        reps: 1
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 40
+          tol: 1.0e-3
+        initialization:
+          strategy: interpolation
+          seed: 7
+    - label: qaoa_random_p1
+      name: qaoa
+      parameters:
+        reps: 1
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 40
+          tol: 1.0e-3
+        initialization:
+          strategy: random
+          seed: 7
+    - label: vqe_problem_aware_d1
+      name: vqe
+      parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 1
+        optimizer:
+          name: COBYLA
+          maxiter: 60
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          seed: 7
+          scale: 0.2
+    - label: vqe_hardware_efficient_d1
+      name: vqe
+      parameters:
+        max_variables: 12
+        ansatz:
+          family: hardware_efficient
+          depth: 1
+        optimizer:
+          name: COBYLA
+          maxiter: 60
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          seed: 7
+          scale: 0.2
+
+output:
+  directory: data/results
+  tag: starter-benchmark-campaign

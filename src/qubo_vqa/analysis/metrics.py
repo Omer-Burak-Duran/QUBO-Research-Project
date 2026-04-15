@@ -13,6 +13,8 @@ def summarize_solver_result(result: SolverResult) -> dict[str, float | int | str
         "solver_name": result.solver_name,
         "best_energy": result.best_energy,
         "objective_value": result.decoded_solution.objective_value,
+        "penalty": result.decoded_solution.penalty,
+        "total_energy": result.decoded_solution.total_energy,
         "is_feasible": int(result.decoded_solution.is_feasible),
         "runtime_seconds": result.runtime_seconds,
         "evaluations": int(result.metadata.get("evaluations", len(result.trace))),
@@ -22,6 +24,32 @@ def summarize_solver_result(result: SolverResult) -> dict[str, float | int | str
         metrics["best_expectation_energy"] = float(result.metadata["best_expectation_energy"])
     if "best_dominant_probability" in result.metadata:
         metrics["best_dominant_probability"] = float(result.metadata["best_dominant_probability"])
+    if "optimization_success" in result.metadata:
+        metrics["optimizer_reported_success"] = int(bool(result.metadata["optimization_success"]))
+    if "sampling_success" in result.metadata:
+        metrics["sampling_completed"] = int(bool(result.metadata["sampling_success"]))
+    backend = result.metadata.get("backend")
+    if isinstance(backend, dict):
+        if backend.get("mode") is not None:
+            metrics["backend_mode"] = str(backend["mode"])
+        if backend.get("shots") is not None:
+            metrics["backend_shots"] = int(backend["shots"])
+        if backend.get("noise_model_name") is not None:
+            metrics["noise_model_name"] = str(backend["noise_model_name"])
+    optimizer = result.metadata.get("optimizer")
+    if isinstance(optimizer, dict) and optimizer.get("method") is not None:
+        metrics["optimizer_method"] = str(optimizer["method"])
+    initialization = result.metadata.get("initialization")
+    if isinstance(initialization, dict) and initialization.get("strategy") is not None:
+        metrics["initialization_strategy"] = str(initialization["strategy"])
+    ansatz = result.metadata.get("ansatz")
+    if isinstance(ansatz, dict):
+        if ansatz.get("family") is not None:
+            metrics["ansatz_family"] = str(ansatz["family"])
+        if ansatz.get("depth") is not None:
+            metrics["ansatz_depth"] = int(ansatz["depth"])
+    if result.metadata.get("reps") is not None:
+        metrics["qaoa_reps"] = int(result.metadata["reps"])
     return metrics
 
 

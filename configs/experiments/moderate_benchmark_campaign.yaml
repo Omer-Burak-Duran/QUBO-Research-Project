@@ -1,0 +1,84 @@
+experiment_name: moderate_benchmark_campaign
+seed: 7
+
+campaign:
+  exact_reference_max_variables: 20
+  problems:
+    - label: maxcut-cycle-4
+      name: maxcut
+      parameters:
+        graph_family: cycle
+        num_nodes: 4
+        weight: 1.0
+    - label: mvc-path-4
+      name: minimum_vertex_cover
+      parameters:
+        graph_family: path
+        num_nodes: 4
+        penalty_strength: 2.0
+  problem_sweeps:
+    - name: maxcut
+      label_template: "maxcut_{graph_family}_{num_nodes}_seed{seed}"
+      base_parameters:
+        weight: 1.0
+        weighted: false
+      sweep:
+        graph_family: [cycle, erdos_renyi]
+        num_nodes: [6]
+        edge_probability: [0.5]
+        seed: [11]
+    - name: minimum_vertex_cover
+      label_template: "mvc_{graph_family}_{num_nodes}_seed{seed}"
+      base_parameters:
+        penalty_strength: 2.0
+      sweep:
+        graph_family: [cycle, erdos_renyi]
+        num_nodes: [6]
+        edge_probability: [0.5]
+        seed: [11]
+  solvers:
+    - label: brute_force
+      name: brute_force
+      parameters:
+        max_variables: 20
+    - label: openjij_sa
+      name: openjij
+      parameters:
+        sampler: sa
+        num_reads: 64
+        num_sweeps: 1000
+        max_variables: 128
+  solver_sweeps:
+    - name: qaoa
+      label_template: "qaoa_{initialization_strategy}_p{reps}"
+      base_parameters:
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 45
+          tol: 1.0e-3
+        backend:
+          mode: statevector
+      sweep:
+        reps: [1, 2]
+        initialization.strategy: [interpolation, random]
+    - name: vqe
+      label_template: "vqe_{ansatz_family}_d{ansatz_depth}"
+      base_parameters:
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 70
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: statevector
+      sweep:
+        ansatz.family: [problem_aware, hardware_efficient]
+        ansatz.depth: [1]
+
+output:
+  directory: data/results
+  tag: moderate-benchmark-campaign
