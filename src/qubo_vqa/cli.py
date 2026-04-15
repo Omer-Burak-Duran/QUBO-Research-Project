@@ -6,6 +6,7 @@ import argparse
 
 from qubo_vqa.experiments import (
     run_experiment_from_config,
+    run_landscape_analysis,
     run_qaoa_initialization_comparison,
     run_quantum_backend_comparison,
 )
@@ -45,6 +46,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional base output directory. Overrides the config output directory.",
     )
+
+    landscape_parser = subparsers.add_parser(
+        "analyze-landscape",
+        help="Run the Milestone 12 landscape-analysis workflow from a YAML config file.",
+    )
+    landscape_parser.add_argument("--config", required=True, help="Path to the YAML config file.")
+    landscape_parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Optional base output directory. Overrides the config output directory.",
+    )
     return parser
 
 
@@ -75,6 +87,14 @@ def main() -> None:
             output_directory=arguments.output_dir,
         )
         print(f"Backend comparison outputs written to: {run_directory}")
+        return
+
+    if arguments.command == "analyze-landscape":
+        run_directory = run_landscape_analysis(
+            config_path=arguments.config,
+            output_directory=arguments.output_dir,
+        )
+        print(f"Landscape analysis outputs written to: {run_directory}")
 
 
 if __name__ == "__main__":

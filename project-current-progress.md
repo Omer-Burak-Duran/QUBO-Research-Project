@@ -13,7 +13,8 @@ The repository is currently at a stable intermediate stage with both classical a
 - Shot-based backend support is now implemented for the current small QAOA and VQE paths.
 - Aer-backed noisy backend support is now implemented for the current small MaxCut QAOA and VQE paths.
 - A config-driven backend comparison workflow now measures exact-vs-shot-based-vs-noisy behavior directly on the preserved MaxCut QAOA path.
-- Later milestones such as OpenJij baselines, TSP completion, and landscape analysis are still deferred.
+- A first preserved Milestone 12 landscape-analysis workflow now exists for a small MaxCut QAOA/VQE study.
+- Later milestones such as OpenJij baselines and TSP completion are still deferred.
 
 The current baseline that should be preserved is:
 
@@ -28,6 +29,7 @@ The current baseline that should be preserved is:
 - `Minimum Vertex Cover -> QUBO -> Ising -> VQE (statevector) -> saved outputs`
 - `MaxCut -> backend comparison (statevector / shot_based / noisy) -> saved summary, tables, traces, and plots`
 - `MaxCut -> QAOA initialization comparison (interpolation / warm_start / random) -> saved summary, traces, tables, and plots`
+- `MaxCut -> landscape analysis (QAOA p=1 heatmap / QAOA multi-start / QAOA+VQE gradient statistics) -> saved summary, tables, traces, and plots`
 
 Do not break these validated paths in future passes.
 
@@ -136,14 +138,33 @@ Do not break these validated paths in future passes.
     - noisy QAOA MaxCut
     - noisy VQE MaxCut
   - a config-driven backend comparison workflow now saves grouped summary metrics, CSV tables, per-run traces, and backend-comparison plots
+- `Milestone 12: Landscape analysis`
+  - `analysis/landscape.py` now implements a real QAOA `p=1` parameter-grid evaluator plus landscape summarization utilities
+  - `analysis/barren_plateau.py` now implements finite-difference gradient sampling and summary statistics
+  - a config-driven landscape workflow now exists:
+    - `python -m qubo_vqa.cli analyze-landscape --config ...`
+  - the preserved starter workflow currently saves:
+    - `summary.json`
+    - `tables/qaoa_p1_landscape.csv`
+    - `tables/qaoa_multistart_runs.csv`
+    - `tables/qaoa_gradient_statistics.csv`
+    - `tables/vqe_gradient_statistics.csv`
+    - per-run QAOA multi-start traces
+    - QAOA landscape heatmaps
+    - QAOA multi-start convergence plot
+    - QAOA and VQE gradient-norm plots
+  - validated starter behavior in the current pass:
+    - the exact-reference 4-cycle MaxCut optimum remained `4.0`
+    - the QAOA `p=1` grid recovered a best expectation energy of about `-3.0`
+    - the multi-start QAOA runs all preserved best decoded objective value `4.0`
+    - both QAOA and VQE gradient-statistics summaries were emitted successfully
 
 ### Milestone Status Check
 
-- `Milestones 0` through `11` are now fully implemented and fully covered against the definitions in `project-milestones.md`.
+- `Milestones 0` through `12` are now fully implemented and fully covered against the definitions in `project-milestones.md`.
 
 ### Scaffolded only
 
-- `Milestone 12: Landscape analysis`
 - `Milestone 13+:` later benchmark and interpretation milestones
 
 ## What works end to end right now
@@ -325,6 +346,41 @@ Do not break these validated paths in future passes.
     - `noisy`: about `-2.8594`
   - the noisy backend incurred a runtime cost relative to the current shot-based starter path
 
+### Landscape analysis validated path
+
+- problem: MaxCut
+- encoding: QUBO -> Ising
+- workflow surface:
+  - QAOA `p=1` landscape scan
+  - QAOA multi-start convergence study
+  - QAOA finite-difference gradient statistics
+  - VQE finite-difference gradient statistics
+- validated starter config:
+  - `configs/experiments/qaoa_landscape_analysis.yaml`
+- output:
+  - `summary.json`
+  - `tables/qaoa_p1_landscape.csv`
+  - `tables/qaoa_multistart_runs.csv`
+  - `tables/qaoa_gradient_statistics.csv`
+  - `tables/vqe_gradient_statistics.csv`
+  - per-run `traces/qaoa-multistart-*.json`
+  - `plots/qaoa_p1_landscape_energy.png`
+  - `plots/qaoa_p1_landscape_objective.png`
+  - `plots/qaoa_multistart_convergence.png`
+  - `plots/qaoa_gradient_norms.png`
+  - `plots/vqe_gradient_norms.png`
+- behavior validated in the current pass:
+  - the exact-reference 4-cycle MaxCut optimum remained `4.0`
+  - the QAOA `p=1` scan covered `441` parameter points
+  - the best sampled landscape point reached expectation energy about `-3.0`
+  - the best sampled landscape point had:
+    - `gamma`: about `0.7854`
+    - `beta`: about `1.1781`
+  - the multi-start QAOA summary preserved best decoded objective value `4.0`
+  - the current summary reported:
+    - mean QAOA gradient norm: about `2.1205`
+    - mean VQE gradient norm: about `0.5977`
+
 ## Current limitations
 
 - `MaxCut` and `MinimumVertexCoverInstance` are currently implemented as working problems.
@@ -337,11 +393,14 @@ Do not break these validated paths in future passes.
 - The initialization comparison workflow is currently limited to the MaxCut QAOA statevector path.
 - The backend comparison workflow is currently validated on the MaxCut QAOA path.
 - Milestone 8 plots currently summarize one benchmark instance/config at a time rather than a broader multi-instance campaign.
+- The preserved Milestone 12 workflow is currently validated on a small MaxCut cycle instance with `qaoa.reps = 1`.
+- The current landscape workflow supports the shared backend abstraction, but the preserved starter config is statevector-only.
+- QAOA `p=2` slices and broader multi-instance landscape campaigns are still deferred beyond the first preserved landscape path.
 - Some deeper QAOA comparison runs can hit the optimizer iteration cap before reporting `optimization_success=true`, even when the best decoded bitstring is already optimal.
 - The current preserved finite-shot benchmark path is QAOA on MaxCut; shot-based VQE is runnable but still needs tuning before it should be treated as equally strong.
 - Experiment configs are plain YAML; Hydra is not in use yet.
 - Logging is good for single runs, but sweep/benchmark management is still minimal.
-- Tests are meaningful for the current scope and now include shot-based plus noisy backend coverage, but they do not yet cover landscape analysis.
+- Tests are meaningful for the current scope and now include shot-based, noisy, and first-pass landscape-analysis coverage.
 
 ## Important assumptions and design decisions
 
@@ -384,7 +443,7 @@ These commands were revalidated using the repository virtual environment and sho
 
 Outcome at last validation:
 
-- `31 passed`
+- `34 passed`
 
 ### Run the classical MaxCut example
 
@@ -513,6 +572,22 @@ Outcome at last validation:
   - `shot_based`: about `-2.9961`
   - `noisy`: about `-2.8594`
 
+### Run the landscape-analysis example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- the exact-reference 4-cycle MaxCut optimum remained `4.0`
+- the QAOA `p=1` scan covered `441` parameter points
+- the best sampled landscape point reached expectation energy about `-3.0`
+- the multi-start QAOA summary preserved best decoded objective value `4.0`
+- both QAOA and VQE gradient-statistics tables and plots were emitted successfully
+
 ### Run the classical Minimum Vertex Cover example
 
 ```powershell
@@ -583,6 +658,8 @@ Outcome at last validation:
 - Keep the current shot-based backend toggle working through `solver.parameters.backend`.
 - Keep the current backend comparison command working:
   - `python -m qubo_vqa.cli compare-backends --config configs/experiments/qaoa_backend_comparison.yaml`
+- Keep the new landscape-analysis command working:
+  - `python -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml`
 - Keep the preserved MVC quantum example paths working:
   - `python -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml`
   - `python -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml`
@@ -593,12 +670,12 @@ Outcome at last validation:
 
 The exact next milestone is now:
 
-- `Milestone 12: Landscape analysis`
+- `Milestone 13: OpenJij and additional classical sampling baselines`
 
 The most natural next implementation pass is:
 
-1. build the first preserved landscape-analysis path on a small MaxCut QAOA instance,
-2. reuse the current exact, shot-based, and noisy backends when sampling landscape slices,
-3. add gradient- or sensitivity-oriented summary metrics and plots,
-4. keep the new backend comparison workflow as the calibration reference while moving into Milestone 12,
-5. continue implementing until Milestone 12 is fully covered.
+1. add an OpenJij-backed solver interface that consumes the same preserved QUBO boundary,
+2. validate it first on the existing MaxCut and Minimum Vertex Cover starter instances,
+3. emit the same `SolverResult` shape plus standard run artifacts for fair comparison,
+4. extend side-by-side comparisons beyond brute force / QAOA / VQE to include the new sampler baseline,
+5. keep the current landscape-analysis path stable while adding the first non-variational sampling comparison.

@@ -1,0 +1,52 @@
+experiment_name: qaoa_maxcut_landscape_analysis
+seed: 7
+
+problem:
+  name: maxcut
+  parameters:
+    graph_family: cycle
+    num_nodes: 4
+    weight: 1.0
+
+qaoa:
+  reps: 1
+  max_variables: 12
+  optimizer:
+    name: COBYLA
+    maxiter: 35
+    tol: 1.0e-3
+  backend:
+    mode: statevector
+  landscape:
+    gamma_bounds: [0.0, 3.141592653589793]
+    gamma_points: 21
+    beta_bounds: [0.0, 1.5707963267948966]
+    beta_points: 21
+  multi_start:
+    trials: 4
+  gradient_statistics:
+    samples: 6
+    epsilon: 0.01
+
+vqe:
+  max_variables: 12
+  ansatz:
+    family: hardware_efficient
+    depth: 1
+  optimizer:
+    name: COBYLA
+    maxiter: 35
+    tol: 1.0e-3
+  backend:
+    mode: statevector
+  initialization:
+    strategy: uniform
+    seed: 13
+    scale: 0.2
+  gradient_statistics:
+    samples: 6
+    epsilon: 0.01
+
+output:
+  directory: data/results
+  tag: qaoa-landscape-analysis

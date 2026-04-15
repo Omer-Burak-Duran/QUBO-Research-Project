@@ -95,6 +95,12 @@ def qaoa_initialization_comparison_config_path() -> Path:
 
 
 @pytest.fixture()
+def qaoa_landscape_analysis_config_path() -> Path:
+    """Return the path to the landscape-analysis config."""
+    return Path("configs/experiments/qaoa_landscape_analysis.yaml")
+
+
+@pytest.fixture()
 def mvc_config_path() -> Path:
     """Return the path to the starter Minimum Vertex Cover config."""
     return Path("configs/experiments/classical_min_vertex_cover.yaml")

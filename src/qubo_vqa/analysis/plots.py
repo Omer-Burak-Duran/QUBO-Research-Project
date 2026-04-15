@@ -158,3 +158,77 @@ def plot_metric_by_category(
     fig.tight_layout()
     fig.savefig(output_path)
     plt.close(fig)
+
+
+def plot_heatmap(
+    *,
+    x_values: np.ndarray,
+    y_values: np.ndarray,
+    matrix: np.ndarray,
+    output_path: Path,
+    title: str,
+    xlabel: str,
+    ylabel: str,
+    colorbar_label: str,
+) -> None:
+    """Plot a dense 2D heatmap over two sampled parameter axes."""
+    ensure_directory(output_path.parent)
+    fig, axis = plt.subplots(figsize=(6.5, 5.0))
+    image = axis.imshow(
+        matrix,
+        origin="lower",
+        aspect="auto",
+        extent=[x_values[0], x_values[-1], y_values[0], y_values[-1]],
+        cmap="viridis",
+    )
+    axis.set_title(title)
+    axis.set_xlabel(xlabel)
+    axis.set_ylabel(ylabel)
+    colorbar = fig.colorbar(image, ax=axis)
+    colorbar.set_label(colorbar_label)
+    fig.tight_layout()
+    fig.savefig(output_path)
+    plt.close(fig)
+
+
+def plot_multistart_energy_traces(
+    trace_records: list[dict[str, Any]],
+    output_path: Path,
+    *,
+    title: str,
+) -> None:
+    """Plot energy traces from multiple optimization runs on one axis."""
+    ensure_directory(output_path.parent)
+    fig, axis = plt.subplots(figsize=(7, 4.5))
+    for record in trace_records:
+        steps = [int(point["step"]) for point in record["trace"]]
+        energies = [float(point["energy"]) for point in record["trace"]]
+        axis.plot(steps, energies, alpha=0.8, label=str(record["label"]))
+    axis.set_title(title)
+    axis.set_xlabel("Evaluation")
+    axis.set_ylabel("Expectation energy")
+    axis.grid(True, alpha=0.3)
+    axis.legend()
+    fig.tight_layout()
+    fig.savefig(output_path)
+    plt.close(fig)
+
+
+def plot_gradient_norm_histogram(
+    gradient_samples: list[dict[str, Any]],
+    output_path: Path,
+    *,
+    title: str,
+) -> None:
+    """Plot the distribution of finite-difference gradient norms."""
+    ensure_directory(output_path.parent)
+    gradient_norms = [float(sample["gradient_norm"]) for sample in gradient_samples]
+    fig, axis = plt.subplots(figsize=(6.5, 4.5))
+    axis.hist(gradient_norms, bins=min(10, max(3, len(gradient_norms))), edgecolor="black")
+    axis.set_title(title)
+    axis.set_xlabel("Gradient norm")
+    axis.set_ylabel("Frequency")
+    axis.grid(True, axis="y", alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(output_path)
+    plt.close(fig)

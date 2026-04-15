@@ -128,6 +128,19 @@ This comparison command benchmarks `interpolation`, `warm_start`, and `random`
 initialization on the current MaxCut statevector path and saves grouped metrics,
 CSV tables, per-run traces, and benchmark-style plots under `data/results/`.
 
+## Run the first landscape-analysis example
+
+```bash
+python -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml
+```
+
+This Milestone 12 workflow preserves one config-driven landscape path on the
+starter MaxCut instance and saves:
+
+- a QAOA `p=1` landscape heatmap,
+- a multi-start QAOA convergence plot,
+- QAOA and VQE finite-difference gradient-statistics tables and plots.
+
 ## Run the tests
 
 ```bash
@@ -150,4 +163,5 @@ The validated repository commands in this project have been run through the virt
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-initializations --config configs/experiments/qaoa_initialization_comparison.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml
 ```
