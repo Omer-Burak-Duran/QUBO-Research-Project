@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qubo-vqa"
+version = "0.1.0"
+description = "Research-oriented tooling for QUBO modeling, variational optimization, and landscape analysis."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+authors = [
+  { name = "Omer" },
+]
+dependencies = [
+  "matplotlib>=3.9",
+  "networkx>=3.3",
+  "numpy>=2.1",
+  "PyYAML>=6.0.2",
+  "scipy>=1.15",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.11",
+]
+classical = [
+  "pulp>=2.9",
+]
+quantum = [
+  "qiskit>=1.3",
+  "qiskit-aer>=0.16",
+]
+
+[project.scripts]
+qubo-vqa = "qubo_vqa.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "D"]
+ignore = ["D203", "D212"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

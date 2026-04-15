@@ -1,0 +1,32 @@
+experiment_name: qaoa_initialization_comparison
+seed: 7
+
+problem:
+  name: maxcut
+  parameters:
+    graph_family: cycle
+    num_nodes: 4
+    weight: 1.0
+
+solver:
+  parameters:
+    max_variables: 12
+    backend:
+      mode: statevector
+    optimizer:
+      name: COBYLA
+      maxiter: 40
+      tol: 1.0e-3
+
+comparison:
+  reps: [1, 2]
+  strategies:
+    - interpolation
+    - warm_start
+    - random
+  random_trials: 2
+  warm_start_bootstrap_strategy: interpolation
+
+output:
+  directory: data/results
+  tag: qaoa-init-compare
