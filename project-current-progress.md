@@ -140,7 +140,6 @@ Do not break these validated paths in future passes.
 ### Milestone Status Check
 
 - `Milestones 0` through `11` are now fully implemented and fully covered against the definitions in `project-milestones.md`.
-- Earlier notes that treated `Milestone 5` as only partial were stricter than the original milestone done criterion; the implemented runner/logging stack already satisfies that milestone's documented definition of done.
 
 ### Scaffolded only
 
@@ -329,7 +328,6 @@ Do not break these validated paths in future passes.
 ## Current limitations
 
 - `MaxCut` and `MinimumVertexCoverInstance` are currently implemented as working problems.
-- `TravelingSalesmanInstance` is still a scaffold.
 - QAOA and VQE currently support:
   - exact-statevector execution
   - noiseless finite-shot sampling
@@ -602,4 +600,5 @@ The most natural next implementation pass is:
 1. build the first preserved landscape-analysis path on a small MaxCut QAOA instance,
 2. reuse the current exact, shot-based, and noisy backends when sampling landscape slices,
 3. add gradient- or sensitivity-oriented summary metrics and plots,
-4. keep the new backend comparison workflow as the calibration reference while moving into Milestone 12.
+4. keep the new backend comparison workflow as the calibration reference while moving into Milestone 12,
+5. continue implementing until Milestone 12 is fully covered.
