@@ -19,6 +19,9 @@ This repository currently implements the current stable foundation:
 - a config-driven experiment runner with saved JSON artifacts and plots,
 - exact-statevector QAOA paths for small MaxCut and tiny MVC instances,
 - exact-statevector VQE paths for small MaxCut and tiny MVC instances,
+- a reproducible shot-based backend toggle for the current small quantum paths,
+- Aer-backed noisy quantum paths for the current small MaxCut examples,
+- a config-driven backend comparison workflow for exact vs shot-based vs noisy QAOA,
 - a config-driven QAOA initialization comparison workflow,
 - standard QAOA comparison tables and benchmark-style plots for the current MaxCut path,
 - starter scaffolding for later TSP and landscape work.
@@ -48,6 +51,50 @@ python -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_statevector.
 ```bash
 python -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_statevector.yaml
 ```
+
+## Run the shot-based QAOA example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_shot_based.yaml
+```
+
+This finite-shot config reuses the same MaxCut starter instance and records the
+backend mode, shot count, and backend seed in the standard result schema.
+
+## Run the shot-based VQE example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_shot_based.yaml
+```
+
+This uses the same finite-shot backend toggle for the current small VQE path.
+It is currently a runnable starter config, while richer shot-based VQE tuning is
+still deferred.
+
+## Run the noisy QAOA example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_noisy.yaml
+```
+
+This uses an Aer-backed sampled noise model and records the backend mode, shot
+count, noise model name, and seed in the standard result schema.
+
+## Run the noisy VQE example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_noisy.yaml
+```
+
+## Compare backend modes
+
+```bash
+python -m qubo_vqa.cli compare-backends --config configs/experiments/qaoa_backend_comparison.yaml
+```
+
+This comparison command benchmarks the current MaxCut QAOA path across
+`statevector`, `shot_based`, and `noisy` execution, and saves grouped metrics,
+CSV tables, per-run traces, and backend-comparison plots under `data/results/`.
 
 ## Run the Minimum Vertex Cover example
 
@@ -94,6 +141,11 @@ The validated repository commands in this project have been run through the virt
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_maxcut.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_statevector.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_shot_based.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_shot_based.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_noisy.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_noisy.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-backends --config configs/experiments/qaoa_backend_comparison.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_min_vertex_cover.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml

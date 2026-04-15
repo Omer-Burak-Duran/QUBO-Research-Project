@@ -74,3 +74,44 @@ def aggregate_qaoa_initialization_runs(
             }
         )
     return aggregates
+
+
+def aggregate_backend_comparison_runs(
+    run_metrics: list[dict[str, Any]],
+) -> list[dict[str, float | int | str]]:
+    """Aggregate backend comparison runs by backend label."""
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for record in run_metrics:
+        grouped.setdefault(str(record["backend_label"]), []).append(record)
+
+    aggregates: list[dict[str, float | int | str]] = []
+    for backend_label in sorted(grouped):
+        records = grouped[backend_label]
+        objective_values = [float(record["objective_value"]) for record in records]
+        approximation_ratios = [float(record["approximation_ratio"]) for record in records]
+        best_expectations = [
+            float(record.get("best_expectation_energy", record["best_energy"]))
+            for record in records
+        ]
+        runtimes = [float(record["runtime_seconds"]) for record in records]
+        evaluations = [int(record["evaluations"]) for record in records]
+
+        aggregates.append(
+            {
+                "backend_label": backend_label,
+                "mode": str(records[0]["mode"]),
+                "noise_model_name": str(records[0]["noise_model_name"]),
+                "num_runs": len(records),
+                "best_objective_value": max(objective_values),
+                "mean_objective_value": sum(objective_values) / len(objective_values),
+                "best_approximation_ratio": max(approximation_ratios),
+                "mean_approximation_ratio": sum(approximation_ratios) / len(approximation_ratios),
+                "best_energy": min(float(record["best_energy"]) for record in records),
+                "mean_best_expectation_energy": sum(best_expectations) / len(best_expectations),
+                "mean_runtime_seconds": sum(runtimes) / len(runtimes),
+                "mean_evaluations": sum(evaluations) / len(evaluations),
+                "success_rate": sum(bool(record["optimization_success"]) for record in records)
+                / len(records),
+            }
+        )
+    return aggregates

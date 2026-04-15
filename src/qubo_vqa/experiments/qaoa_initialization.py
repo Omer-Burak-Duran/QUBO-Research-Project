@@ -147,6 +147,11 @@ def load_qaoa_initialization_comparison_config(
                 if backend_parameters.get("noise_model_name") is not None
                 else None
             ),
+            seed=(
+                int(backend_parameters["seed"])
+                if backend_parameters.get("seed") is not None
+                else int(raw_payload.get("seed", 0))
+            ),
         ),
         max_variables=int(solver_parameters.get("max_variables", 12)),
     )

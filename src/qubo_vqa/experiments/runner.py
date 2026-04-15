@@ -107,6 +107,11 @@ def build_solver(config: ExperimentConfig):
                     if backend_parameters.get("noise_model_name") is not None
                     else None
                 ),
+                seed=(
+                    int(backend_parameters["seed"])
+                    if backend_parameters.get("seed") is not None
+                    else config.seed
+                ),
             ),
             optimizer_config=QAOAOptimizerConfig(
                 method=str(
@@ -160,6 +165,11 @@ def build_solver(config: ExperimentConfig):
                     str(backend_parameters["noise_model_name"])
                     if backend_parameters.get("noise_model_name") is not None
                     else None
+                ),
+                seed=(
+                    int(backend_parameters["seed"])
+                    if backend_parameters.get("seed") is not None
+                    else config.seed
                 ),
             ),
             optimizer_config=VQEOptimizerConfig(

@@ -1,0 +1,33 @@
+experiment_name: vqe_maxcut_cycle_shot_based
+seed: 7
+
+problem:
+  name: maxcut
+  parameters:
+    graph_family: cycle
+    num_nodes: 4
+    weight: 1.0
+
+solver:
+  name: vqe
+  parameters:
+    max_variables: 12
+    ansatz:
+      family: problem_aware
+      depth: 1
+    backend:
+      mode: shot_based
+      shots: 4096
+      seed: 7
+    optimizer:
+      name: COBYLA
+      maxiter: 80
+      tol: 1.0e-3
+    initialization:
+      strategy: small_random
+      seed: 7
+      scale: 0.2
+
+output:
+  directory: data/results
+  tag: vqe-maxcut-shot-based

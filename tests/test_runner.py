@@ -51,6 +51,90 @@ def test_runner_supports_vqe_and_writes_ising_artifact(vqe_config_path, tmp_path
     assert (run_directory / "plots" / "maxcut_partition.png").exists()
 
 
+def test_runner_supports_shot_based_qaoa_and_writes_ising_artifact(
+    qaoa_shot_based_config_path,
+    tmp_path,
+) -> None:
+    """The shot-based QAOA example should save the standard quantum artifacts."""
+    run_directory = run_experiment_from_config(
+        qaoa_shot_based_config_path,
+        output_directory=tmp_path,
+    )
+
+    assert (run_directory / "config.json").exists()
+    assert (run_directory / "metrics.json").exists()
+    assert (run_directory / "result.json").exists()
+    assert (run_directory / "run_metadata.json").exists()
+    assert (run_directory / "trace.json").exists()
+    assert (run_directory / "artifacts" / "qubo_model.json").exists()
+    assert (run_directory / "artifacts" / "ising_model.json").exists()
+    assert (run_directory / "plots" / "energy_trace.png").exists()
+    assert (run_directory / "plots" / "maxcut_partition.png").exists()
+
+
+def test_runner_supports_shot_based_vqe_and_writes_ising_artifact(
+    vqe_shot_based_config_path,
+    tmp_path,
+) -> None:
+    """The shot-based VQE example should save the standard quantum artifacts."""
+    run_directory = run_experiment_from_config(
+        vqe_shot_based_config_path,
+        output_directory=tmp_path,
+    )
+
+    assert (run_directory / "config.json").exists()
+    assert (run_directory / "metrics.json").exists()
+    assert (run_directory / "result.json").exists()
+    assert (run_directory / "run_metadata.json").exists()
+    assert (run_directory / "trace.json").exists()
+    assert (run_directory / "artifacts" / "qubo_model.json").exists()
+    assert (run_directory / "artifacts" / "ising_model.json").exists()
+    assert (run_directory / "plots" / "energy_trace.png").exists()
+    assert (run_directory / "plots" / "maxcut_partition.png").exists()
+
+
+def test_runner_supports_noisy_qaoa_and_writes_ising_artifact(
+    qaoa_noisy_config_path,
+    tmp_path,
+) -> None:
+    """The noisy QAOA example should save the standard quantum artifacts."""
+    run_directory = run_experiment_from_config(
+        qaoa_noisy_config_path,
+        output_directory=tmp_path,
+    )
+
+    assert (run_directory / "config.json").exists()
+    assert (run_directory / "metrics.json").exists()
+    assert (run_directory / "result.json").exists()
+    assert (run_directory / "run_metadata.json").exists()
+    assert (run_directory / "trace.json").exists()
+    assert (run_directory / "artifacts" / "qubo_model.json").exists()
+    assert (run_directory / "artifacts" / "ising_model.json").exists()
+    assert (run_directory / "plots" / "energy_trace.png").exists()
+    assert (run_directory / "plots" / "maxcut_partition.png").exists()
+
+
+def test_runner_supports_noisy_vqe_and_writes_ising_artifact(
+    vqe_noisy_config_path,
+    tmp_path,
+) -> None:
+    """The noisy VQE example should save the standard quantum artifacts."""
+    run_directory = run_experiment_from_config(
+        vqe_noisy_config_path,
+        output_directory=tmp_path,
+    )
+
+    assert (run_directory / "config.json").exists()
+    assert (run_directory / "metrics.json").exists()
+    assert (run_directory / "result.json").exists()
+    assert (run_directory / "run_metadata.json").exists()
+    assert (run_directory / "trace.json").exists()
+    assert (run_directory / "artifacts" / "qubo_model.json").exists()
+    assert (run_directory / "artifacts" / "ising_model.json").exists()
+    assert (run_directory / "plots" / "energy_trace.png").exists()
+    assert (run_directory / "plots" / "maxcut_partition.png").exists()
+
+
 def test_runner_supports_qaoa_mvc_without_maxcut_plot(
     qaoa_mvc_config_path,
     tmp_path,

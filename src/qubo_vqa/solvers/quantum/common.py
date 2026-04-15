@@ -1,4 +1,4 @@
-"""Shared helpers for exact-statevector variational solvers."""
+"""Shared helpers for small variational solvers."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig, build_backen
 
 @dataclass(slots=True)
 class VariationalEvaluation:
-    """One evaluated parameter vector and its exact basis distribution."""
+    """One evaluated parameter vector and its basis-state distribution."""
 
     parameters: np.ndarray
     expectation_energy: float
@@ -44,14 +44,14 @@ def precompute_ising_basis_energies(ising_model: IsingModel) -> np.ndarray:
     )
 
 
-def evaluate_statevector_circuit(
+def evaluate_variational_circuit(
     *,
     circuit,
     parameters: np.ndarray,
     basis_energies: np.ndarray,
     backend_config: QuantumBackendConfig,
 ) -> VariationalEvaluation:
-    """Evaluate one variational circuit exactly in the computational basis."""
+    """Evaluate one variational circuit in the computational basis."""
     backend = build_backend(backend_config)
     probabilities = backend.bitstring_probabilities(circuit)
     expectation_energy = float(np.dot(probabilities, basis_energies))
@@ -65,6 +65,22 @@ def evaluate_statevector_circuit(
         dominant_probability=float(probabilities[dominant_index]),
         dominant_bitstring_energy=float(basis_energies[dominant_index]),
         probabilities=probabilities,
+    )
+
+
+def evaluate_statevector_circuit(
+    *,
+    circuit,
+    parameters: np.ndarray,
+    basis_energies: np.ndarray,
+    backend_config: QuantumBackendConfig,
+) -> VariationalEvaluation:
+    """Backward-compatible alias for the generic circuit evaluator."""
+    return evaluate_variational_circuit(
+        circuit=circuit,
+        parameters=parameters,
+        basis_energies=basis_energies,
+        backend_config=backend_config,
     )
 
 

@@ -1,4 +1,4 @@
-"""Exact-statevector QAOA implementation for small benchmark problems."""
+"""QAOA implementation for small benchmark problems."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from qubo_vqa.solvers.base import Decoder, Solver
 from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig
 from qubo_vqa.solvers.quantum.common import (
     VariationalEvaluation,
-    evaluate_statevector_circuit,
+    evaluate_variational_circuit,
     precompute_ising_basis_energies,
     top_basis_probabilities,
 )
@@ -90,9 +90,9 @@ def evaluate_qaoa_parameters(
     basis_energies: np.ndarray,
     backend_config: QuantumBackendConfig,
 ) -> VariationalEvaluation:
-    """Evaluate one QAOA parameter vector exactly in the computational basis."""
+    """Evaluate one QAOA parameter vector in the computational basis."""
     circuit = build_qaoa_circuit(ising_model, parameters, reps)
-    return evaluate_statevector_circuit(
+    return evaluate_variational_circuit(
         circuit=circuit,
         parameters=parameters,
         basis_energies=basis_energies,
@@ -102,7 +102,7 @@ def evaluate_qaoa_parameters(
 
 @dataclass(slots=True)
 class QAOASolver(Solver):
-    """Exact-statevector QAOA solver for small Ising/QUBO problems."""
+    """QAOA solver for small Ising/QUBO benchmark problems."""
 
     reps: int = 1
     backend_config: QuantumBackendConfig = field(default_factory=QuantumBackendConfig)
@@ -200,7 +200,12 @@ class QAOASolver(Solver):
             runtime_seconds=runtime_seconds,
             trace=trace,
             metadata={
-                "backend": {"mode": self.backend_config.mode, "shots": self.backend_config.shots},
+                "backend": {
+                    "mode": self.backend_config.mode,
+                    "shots": self.backend_config.shots,
+                    "seed": self.backend_config.seed,
+                    "noise_model_name": self.backend_config.noise_model_name,
+                },
                 "optimizer": self.optimizer_config.as_dict(),
                 "initialization": self.initialization_config.as_dict(),
                 "reps": self.reps,

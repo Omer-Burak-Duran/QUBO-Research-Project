@@ -1,4 +1,4 @@
-"""Exact-statevector VQE implementation for the next quantum milestone."""
+"""VQE implementation for the current small benchmark problems."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from qubo_vqa.solvers.quantum.ansatz import build_vqe_ansatz, describe_vqe_ansat
 from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig
 from qubo_vqa.solvers.quantum.common import (
     VariationalEvaluation,
-    evaluate_statevector_circuit,
+    evaluate_variational_circuit,
     precompute_ising_basis_energies,
     top_basis_probabilities,
 )
@@ -85,14 +85,14 @@ def evaluate_vqe_parameters(
     basis_energies: np.ndarray,
     backend_config: QuantumBackendConfig,
 ) -> VariationalEvaluation:
-    """Evaluate one VQE parameter vector exactly in the computational basis."""
+    """Evaluate one VQE parameter vector in the computational basis."""
     circuit = build_vqe_ansatz(
         ising_model=ising_model,
         family=ansatz_name,
         parameters=parameters,
         depth=ansatz_depth,
     )
-    return evaluate_statevector_circuit(
+    return evaluate_variational_circuit(
         circuit=circuit,
         parameters=parameters,
         basis_energies=basis_energies,
@@ -102,7 +102,7 @@ def evaluate_vqe_parameters(
 
 @dataclass(slots=True)
 class VQESolver(Solver):
-    """Exact-statevector VQE solver for small Ising/QUBO benchmark problems."""
+    """VQE solver for small Ising/QUBO benchmark problems."""
 
     ansatz_name: str = "hardware_efficient"
     ansatz_depth: int = 1
@@ -200,7 +200,12 @@ class VQESolver(Solver):
             runtime_seconds=runtime_seconds,
             trace=trace,
             metadata={
-                "backend": {"mode": self.backend_config.mode, "shots": self.backend_config.shots},
+                "backend": {
+                    "mode": self.backend_config.mode,
+                    "shots": self.backend_config.shots,
+                    "seed": self.backend_config.seed,
+                    "noise_model_name": self.backend_config.noise_model_name,
+                },
                 "optimizer": self.optimizer_config.as_dict(),
                 "initialization": self.initialization_config.as_dict(),
                 "ansatz": ansatz_description.as_dict(),

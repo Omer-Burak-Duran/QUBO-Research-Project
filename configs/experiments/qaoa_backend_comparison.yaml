@@ -1,0 +1,41 @@
+experiment_name: qaoa_maxcut_backend_comparison
+seed: 7
+
+problem:
+  name: maxcut
+  parameters:
+    graph_family: cycle
+    num_nodes: 4
+    weight: 1.0
+
+solver:
+  name: qaoa
+  parameters:
+    reps: 1
+    max_variables: 12
+    optimizer:
+      name: COBYLA
+      maxiter: 40
+      tol: 1.0e-3
+    initialization:
+      strategy: interpolation
+      seed: 7
+
+comparison:
+  backends:
+    - label: statevector
+      mode: statevector
+      trials: 1
+    - label: shot_based
+      mode: shot_based
+      shots: 2048
+      trials: 1
+    - label: noisy
+      mode: noisy
+      shots: 2048
+      noise_model_name: depolarizing_readout
+      trials: 1
+
+output:
+  directory: data/results
+  tag: qaoa-backend-compare

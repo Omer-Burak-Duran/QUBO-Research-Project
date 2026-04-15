@@ -47,6 +47,36 @@ def vqe_config_path() -> Path:
 
 
 @pytest.fixture()
+def qaoa_shot_based_config_path() -> Path:
+    """Return the path to the shot-based QAOA example config."""
+    return Path("configs/experiments/qaoa_maxcut_shot_based.yaml")
+
+
+@pytest.fixture()
+def vqe_shot_based_config_path() -> Path:
+    """Return the path to the shot-based VQE example config."""
+    return Path("configs/experiments/vqe_maxcut_shot_based.yaml")
+
+
+@pytest.fixture()
+def qaoa_noisy_config_path() -> Path:
+    """Return the path to the noisy QAOA example config."""
+    return Path("configs/experiments/qaoa_maxcut_noisy.yaml")
+
+
+@pytest.fixture()
+def vqe_noisy_config_path() -> Path:
+    """Return the path to the noisy VQE example config."""
+    return Path("configs/experiments/vqe_maxcut_noisy.yaml")
+
+
+@pytest.fixture()
+def backend_comparison_config_path() -> Path:
+    """Return the path to the backend comparison config."""
+    return Path("configs/experiments/qaoa_backend_comparison.yaml")
+
+
+@pytest.fixture()
 def qaoa_mvc_config_path() -> Path:
     """Return the path to the starter QAOA MVC example config."""
     return Path("configs/experiments/qaoa_min_vertex_cover_statevector.yaml")

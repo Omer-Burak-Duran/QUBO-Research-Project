@@ -126,3 +126,35 @@ def plot_qaoa_parameter_values_by_depth(
         fig.tight_layout()
         fig.savefig(output_directory / f"final_parameters_{strategy}.png")
         plt.close(fig)
+
+
+def plot_metric_by_category(
+    aggregate_records: list[dict[str, Any]],
+    category_key: str,
+    metric_key: str,
+    output_path: Path,
+    title: str,
+    ylabel: str,
+) -> None:
+    """Plot one metric as a bar chart across categorical experiment groups."""
+    ensure_directory(output_path.parent)
+    records = [
+        record
+        for record in aggregate_records
+        if metric_key in record and category_key in record
+    ]
+    if not records:
+        return
+
+    labels = [str(record[category_key]) for record in records]
+    values = [float(record[metric_key]) for record in records]
+
+    fig, axis = plt.subplots(figsize=(7, 4.5))
+    axis.bar(labels, values)
+    axis.set_title(title)
+    axis.set_xlabel(category_key.replace("_", " ").title())
+    axis.set_ylabel(ylabel)
+    axis.grid(True, axis="y", alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(output_path)
+    plt.close(fig)
