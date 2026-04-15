@@ -10,6 +10,7 @@ from qubo_vqa.experiments.logging import create_run_directory, save_run_outputs
 from qubo_vqa.problems.maxcut import MaxCutInstance
 from qubo_vqa.problems.min_vertex_cover import MinimumVertexCoverInstance
 from qubo_vqa.solvers.classical.brute_force import BruteForceSolver
+from qubo_vqa.solvers.classical.openjij_solver import OpenJijSolver
 from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig
 from qubo_vqa.solvers.quantum.initialization import QAOAInitializationConfig
 from qubo_vqa.solvers.quantum.qaoa import QAOAOptimizerConfig, QAOASolver
@@ -80,6 +81,30 @@ def build_solver(config: ExperimentConfig):
     if config.solver.name == "brute_force":
         return BruteForceSolver(
             max_variables=int(config.solver.parameters.get("max_variables", 20))
+        )
+
+    if config.solver.name == "openjij":
+        parameters = dict(config.solver.parameters)
+        return OpenJijSolver(
+            sampler=str(parameters.get("sampler", "sa")),
+            num_reads=int(parameters.get("num_reads", 64)),
+            num_sweeps=int(parameters.get("num_sweeps", 1000)),
+            seed=(
+                int(parameters["seed"])
+                if parameters.get("seed") is not None
+                else config.seed
+            ),
+            beta_min=(
+                float(parameters["beta_min"])
+                if parameters.get("beta_min") is not None
+                else None
+            ),
+            beta_max=(
+                float(parameters["beta_max"])
+                if parameters.get("beta_max") is not None
+                else None
+            ),
+            max_variables=int(parameters.get("max_variables", 128)),
         )
 
     if config.solver.name == "qaoa":

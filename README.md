@@ -16,23 +16,27 @@ This repository currently implements the current stable foundation:
 - a complete `MaxCut` benchmark encoder and decoder,
 - a complete `Minimum Vertex Cover` benchmark encoder and decoder,
 - an exact brute-force classical baseline,
+- an OpenJij classical sampling baseline,
 - a config-driven experiment runner with saved JSON artifacts and plots,
 - exact-statevector QAOA paths for small MaxCut and tiny MVC instances,
 - exact-statevector VQE paths for small MaxCut and tiny MVC instances,
 - a reproducible shot-based backend toggle for the current small quantum paths,
 - Aer-backed noisy quantum paths for the current small MaxCut examples,
 - a config-driven backend comparison workflow for exact vs shot-based vs noisy QAOA,
+- a config-driven solver comparison workflow for brute force vs OpenJij vs QAOA vs VQE,
 - a config-driven QAOA initialization comparison workflow,
 - standard QAOA comparison tables and benchmark-style plots for the current MaxCut path,
-- starter scaffolding for later TSP and landscape work.
+- a first preserved landscape-analysis workflow for the current MaxCut path,
+- starter scaffolding for later TSP work.
 
 ## Installation
 
 ```bash
-pip install -e .[dev,quantum]
+pip install -e .[dev,classical,quantum]
 ```
 
-If you only need the classical baseline path, `pip install -e .[dev]` is enough.
+If you only need the brute-force classical baseline path, `pip install -e .[dev]` is enough.
+If you want the OpenJij baseline without the quantum stack, use `pip install -e .[dev,classical]`.
 
 ## Run the first example
 
@@ -96,6 +100,21 @@ This comparison command benchmarks the current MaxCut QAOA path across
 `statevector`, `shot_based`, and `noisy` execution, and saves grouped metrics,
 CSV tables, per-run traces, and backend-comparison plots under `data/results/`.
 
+## Run the OpenJij MaxCut example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/openjij_maxcut.yaml
+```
+
+## Run the OpenJij MVC example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/openjij_min_vertex_cover.yaml
+```
+
+These two configs preserve the new Milestone 13 OpenJij baseline on the current
+starter MaxCut and Minimum Vertex Cover instances.
+
 ## Run the Minimum Vertex Cover example
 
 ```bash
@@ -128,6 +147,16 @@ This comparison command benchmarks `interpolation`, `warm_start`, and `random`
 initialization on the current MaxCut statevector path and saves grouped metrics,
 CSV tables, per-run traces, and benchmark-style plots under `data/results/`.
 
+## Compare solver families on MaxCut
+
+```bash
+python -m qubo_vqa.cli compare-solvers --config configs/experiments/maxcut_solver_comparison.yaml
+```
+
+This Milestone 13 workflow benchmarks the shared starter MaxCut instance across
+`brute_force`, `openjij`, `qaoa`, and `vqe`, and saves grouped comparison
+metrics, CSV tables, per-run traces, and solver-comparison plots.
+
 ## Run the first landscape-analysis example
 
 ```bash
@@ -159,9 +188,12 @@ The validated repository commands in this project have been run through the virt
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_noisy.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_noisy.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-backends --config configs/experiments/qaoa_backend_comparison.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/openjij_maxcut.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/openjij_min_vertex_cover.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_min_vertex_cover.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-initializations --config configs/experiments/qaoa_initialization_comparison.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-solvers --config configs/experiments/maxcut_solver_comparison.yaml
 ```

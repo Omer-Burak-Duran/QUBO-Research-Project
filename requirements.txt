@@ -1,1 +1,1 @@
--e .[dev,quantum]
+-e .[dev,classical,quantum]

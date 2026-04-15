@@ -169,3 +169,24 @@ def test_runner_supports_vqe_mvc_without_maxcut_plot(
     assert (run_directory / "artifacts" / "ising_model.json").exists()
     assert (run_directory / "plots" / "energy_trace.png").exists()
     assert not (run_directory / "plots" / "maxcut_partition.png").exists()
+
+
+def test_runner_supports_openjij_maxcut_without_ising_artifact(
+    openjij_maxcut_config_path,
+    tmp_path,
+) -> None:
+    """The OpenJij MaxCut example should save standard classical artifacts."""
+    run_directory = run_experiment_from_config(
+        openjij_maxcut_config_path,
+        output_directory=tmp_path,
+    )
+
+    assert (run_directory / "config.json").exists()
+    assert (run_directory / "metrics.json").exists()
+    assert (run_directory / "result.json").exists()
+    assert (run_directory / "run_metadata.json").exists()
+    assert (run_directory / "trace.json").exists()
+    assert (run_directory / "artifacts" / "qubo_model.json").exists()
+    assert not (run_directory / "artifacts" / "ising_model.json").exists()
+    assert (run_directory / "plots" / "energy_trace.png").exists()
+    assert (run_directory / "plots" / "maxcut_partition.png").exists()

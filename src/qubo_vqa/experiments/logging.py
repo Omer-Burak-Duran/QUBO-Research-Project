@@ -52,6 +52,7 @@ def build_run_metadata(
         "package_versions": {
             "numpy": _safe_package_version("numpy"),
             "scipy": _safe_package_version("scipy"),
+            "openjij": _safe_package_version("openjij"),
             "qiskit": _safe_package_version("qiskit"),
             "qiskit-aer": _safe_package_version("qiskit-aer"),
         },

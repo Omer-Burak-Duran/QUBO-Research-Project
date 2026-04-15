@@ -101,6 +101,24 @@ def qaoa_landscape_analysis_config_path() -> Path:
 
 
 @pytest.fixture()
+def openjij_maxcut_config_path() -> Path:
+    """Return the path to the OpenJij MaxCut example config."""
+    return Path("configs/experiments/openjij_maxcut.yaml")
+
+
+@pytest.fixture()
+def openjij_mvc_config_path() -> Path:
+    """Return the path to the OpenJij MVC example config."""
+    return Path("configs/experiments/openjij_min_vertex_cover.yaml")
+
+
+@pytest.fixture()
+def solver_comparison_config_path() -> Path:
+    """Return the path to the cross-solver comparison config."""
+    return Path("configs/experiments/maxcut_solver_comparison.yaml")
+
+
+@pytest.fixture()
 def mvc_config_path() -> Path:
     """Return the path to the starter Minimum Vertex Cover config."""
     return Path("configs/experiments/classical_min_vertex_cover.yaml")

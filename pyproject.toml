@@ -26,6 +26,7 @@ dev = [
   "ruff>=0.11",
 ]
 classical = [
+  "openjij",
   "pulp>=2.9",
 ]
 quantum = [

@@ -9,6 +9,7 @@ from qubo_vqa.experiments import (
     run_landscape_analysis,
     run_qaoa_initialization_comparison,
     run_quantum_backend_comparison,
+    run_solver_comparison,
 )
 
 
@@ -57,6 +58,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional base output directory. Overrides the config output directory.",
     )
+
+    solver_parser = subparsers.add_parser(
+        "compare-solvers",
+        help="Compare multiple classical and quantum solvers from a YAML config file.",
+    )
+    solver_parser.add_argument("--config", required=True, help="Path to the YAML config file.")
+    solver_parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Optional base output directory. Overrides the config output directory.",
+    )
     return parser
 
 
@@ -95,6 +107,14 @@ def main() -> None:
             output_directory=arguments.output_dir,
         )
         print(f"Landscape analysis outputs written to: {run_directory}")
+        return
+
+    if arguments.command == "compare-solvers":
+        run_directory = run_solver_comparison(
+            config_path=arguments.config,
+            output_directory=arguments.output_dir,
+        )
+        print(f"Solver comparison outputs written to: {run_directory}")
 
 
 if __name__ == "__main__":

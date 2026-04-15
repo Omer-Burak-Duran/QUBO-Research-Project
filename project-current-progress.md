@@ -14,7 +14,9 @@ The repository is currently at a stable intermediate stage with both classical a
 - Aer-backed noisy backend support is now implemented for the current small MaxCut QAOA and VQE paths.
 - A config-driven backend comparison workflow now measures exact-vs-shot-based-vs-noisy behavior directly on the preserved MaxCut QAOA path.
 - A first preserved Milestone 12 landscape-analysis workflow now exists for a small MaxCut QAOA/VQE study.
-- Later milestones such as OpenJij baselines and TSP completion are still deferred.
+- An OpenJij classical baseline now works end to end on the preserved small MaxCut and MVC paths.
+- A config-driven solver comparison workflow now benchmarks brute force, OpenJij, QAOA, and VQE on the shared MaxCut starter instance.
+- Later milestones such as TSP completion and broader benchmark campaigns are still deferred.
 
 The current baseline that should be preserved is:
 
@@ -30,6 +32,9 @@ The current baseline that should be preserved is:
 - `MaxCut -> backend comparison (statevector / shot_based / noisy) -> saved summary, tables, traces, and plots`
 - `MaxCut -> QAOA initialization comparison (interpolation / warm_start / random) -> saved summary, traces, tables, and plots`
 - `MaxCut -> landscape analysis (QAOA p=1 heatmap / QAOA multi-start / QAOA+VQE gradient statistics) -> saved summary, tables, traces, and plots`
+- `MaxCut -> OpenJij -> saved outputs`
+- `Minimum Vertex Cover -> OpenJij -> saved outputs`
+- `MaxCut -> solver comparison (brute_force / openjij / qaoa / vqe) -> saved summary, tables, traces, and plots`
 
 Do not break these validated paths in future passes.
 
@@ -158,14 +163,33 @@ Do not break these validated paths in future passes.
     - the QAOA `p=1` grid recovered a best expectation energy of about `-3.0`
     - the multi-start QAOA runs all preserved best decoded objective value `4.0`
     - both QAOA and VQE gradient-statistics summaries were emitted successfully
+- `Milestone 13: OpenJij and additional classical sampling baselines`
+  - `OpenJijSolver` now supports the preserved classical solver surface through the normal `run` command path
+  - the solver currently supports:
+    - `sa`
+    - `sqa`
+  - validated starter configs now exist for:
+    - MaxCut
+    - Minimum Vertex Cover
+  - a config-driven solver comparison workflow now exists:
+    - `python -m qubo_vqa.cli compare-solvers --config ...`
+  - comparison outputs include:
+    - `summary.json`
+    - `tables/run_metrics.csv`
+    - `tables/aggregate_metrics.csv`
+    - per-run solver traces
+    - solver-comparison plots
+  - validated Milestone 13 done criterion in the current pass:
+    - for the starter MaxCut family, brute force, OpenJij, QAOA, and VQE all produced comparable result records and comparison tables
+    - the shared comparison summary recorded objective value `4.0` for all four solver families on the preserved 4-cycle instance
 
 ### Milestone Status Check
 
-- `Milestones 0` through `12` are now fully implemented and fully covered against the definitions in `project-milestones.md`.
+- `Milestones 0` through `13` are now fully implemented and fully covered against the definitions in `project-milestones.md`.
 
 ### Scaffolded only
 
-- `Milestone 13+:` later benchmark and interpretation milestones
+- `Milestone 14+:` later benchmark and interpretation milestones
 
 ## What works end to end right now
 
@@ -381,6 +405,58 @@ Do not break these validated paths in future passes.
     - mean QAOA gradient norm: about `2.1205`
     - mean VQE gradient norm: about `0.5977`
 
+### OpenJij MaxCut validated path
+
+- problem: MaxCut
+- encoding: QUBO
+- solver: OpenJij simulated annealing
+- validated starter config:
+  - `configs/experiments/openjij_maxcut.yaml`
+- output: decoded solution, metrics, run metadata, trace, QUBO artifact, plots
+- behavior validated in the current pass:
+  - the starter 4-cycle example recovered the optimal cut value `4.0`
+  - the recorded best QUBO energy was `-4.0`
+  - the validated starter config emitted `64` sampled reads with sampler `sa`
+
+### OpenJij Minimum Vertex Cover validated path
+
+- problem: Minimum Vertex Cover
+- encoding: QUBO with uncovered-edge penalties
+- solver: OpenJij simulated annealing
+- validated starter config:
+  - `configs/experiments/openjij_min_vertex_cover.yaml`
+- output: decoded solution, metrics, run metadata, trace, QUBO artifact, plots
+- behavior validated in the current pass:
+  - the starter 4-cycle example recovered a feasible cover of size `2`
+  - the recorded best QUBO energy was `2.0`
+  - the validated starter config emitted `64` sampled reads with sampler `sa`
+
+### Cross-solver comparison validated path
+
+- problem: MaxCut
+- compared solver families:
+  - `brute_force`
+  - `openjij`
+  - `qaoa`
+  - `vqe`
+- validated starter config:
+  - `configs/experiments/maxcut_solver_comparison.yaml`
+- output:
+  - `summary.json`
+  - `tables/run_metrics.csv`
+  - `tables/aggregate_metrics.csv`
+  - per-run `traces/*.json`
+  - per-run energy-trace plots
+  - aggregate solver-comparison plots
+- behavior validated in the current pass:
+  - all four solver families recovered objective value `4.0` on the starter 4-cycle example
+  - the comparison summary recorded success rate `1.0` for all four validated solver cases
+  - the current summary showed the following mean runtimes:
+    - `brute_force`: about `0.0005 s`
+    - `openjij`: about `0.1394 s`
+    - `qaoa`: about `0.3711 s`
+    - `vqe`: about `0.0358 s`
+
 ## Current limitations
 
 - `MaxCut` and `MinimumVertexCoverInstance` are currently implemented as working problems.
@@ -396,11 +472,13 @@ Do not break these validated paths in future passes.
 - The preserved Milestone 12 workflow is currently validated on a small MaxCut cycle instance with `qaoa.reps = 1`.
 - The current landscape workflow supports the shared backend abstraction, but the preserved starter config is statevector-only.
 - QAOA `p=2` slices and broader multi-instance landscape campaigns are still deferred beyond the first preserved landscape path.
+- The preserved OpenJij benchmark path is currently validated with the `sa` sampler on small starter instances; `sqa` support exists but is not yet a preserved benchmark reference.
+- The cross-solver comparison workflow is currently validated on the MaxCut starter family only.
 - Some deeper QAOA comparison runs can hit the optimizer iteration cap before reporting `optimization_success=true`, even when the best decoded bitstring is already optimal.
 - The current preserved finite-shot benchmark path is QAOA on MaxCut; shot-based VQE is runnable but still needs tuning before it should be treated as equally strong.
 - Experiment configs are plain YAML; Hydra is not in use yet.
 - Logging is good for single runs, but sweep/benchmark management is still minimal.
-- Tests are meaningful for the current scope and now include shot-based, noisy, and first-pass landscape-analysis coverage.
+- Tests are meaningful for the current scope and now include shot-based, noisy, first-pass landscape-analysis, OpenJij, and solver-comparison coverage.
 
 ## Important assumptions and design decisions
 
@@ -420,9 +498,11 @@ Do not break these validated paths in future passes.
   - `noisy`
 - `shot_based` currently means seeded multinomial sampling from the exact noiseless basis distribution.
 - `noisy` currently means Aer-backed finite-shot simulation with a named noise model.
+- OpenJij is now the preserved classical sampling baseline for the current milestone-13 paths.
 - `qiskit` and `qiskit-aer` remain optional extras in `pyproject.toml`.
+- `openjij` remains an optional extra under the classical dependency group in `pyproject.toml`.
 - `requirements.txt` currently installs the full local development environment with quantum support:
-  - `-e .[dev,quantum]`
+  - `-e .[dev,classical,quantum]`
 - TSP is intentionally deferred until the solver/experiment core is more mature.
 
 ## Exact validated commands
@@ -432,7 +512,7 @@ These commands were revalidated using the repository virtual environment and sho
 ### Install / sync environment
 
 ```powershell
-& ".\.venv\Scripts\python.exe" -m pip install -e .[dev,quantum]
+& ".\.venv\Scripts\python.exe" -m pip install -e .[dev,classical,quantum]
 ```
 
 ### Run tests
@@ -443,7 +523,7 @@ These commands were revalidated using the repository virtual environment and sho
 
 Outcome at last validation:
 
-- `34 passed`
+- `38 passed`
 
 ### Run the classical MaxCut example
 
@@ -572,6 +652,34 @@ Outcome at last validation:
   - `shot_based`: about `-2.9961`
   - `noisy`: about `-2.8594`
 
+### Run the OpenJij MaxCut example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/openjij_maxcut.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- recovered the optimal cut value `4.0` on the 4-cycle example
+- recorded best QUBO energy `-4.0`
+- emitted `64` sampled reads with sampler `sa`
+
+### Run the OpenJij Minimum Vertex Cover example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/openjij_min_vertex_cover.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- recovered a feasible cycle-graph cover of size `2`
+- recorded best QUBO energy `2.0`
+- emitted `64` sampled reads with sampler `sa`
+
 ### Run the landscape-analysis example
 
 ```powershell
@@ -627,6 +735,24 @@ Outcome at last validation:
 - finished with `optimization_success=true`
 - concentrated more than `99.8%` probability on the optimal validated MVC bitstring
 
+### Run the solver-comparison example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-solvers --config configs/experiments/maxcut_solver_comparison.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- saved `summary.json`, `tables/`, `traces/`, and both per-run plus aggregate plots
+- all four validated solver families recovered objective value `4.0` on the 4-cycle example:
+  - `brute_force`
+  - `openjij`
+  - `qaoa`
+  - `vqe`
+- the comparison summary recorded success rate `1.0` for all four validated solver cases
+
 ### Run lint/integrity check
 
 ```powershell
@@ -660,6 +786,11 @@ Outcome at last validation:
   - `python -m qubo_vqa.cli compare-backends --config configs/experiments/qaoa_backend_comparison.yaml`
 - Keep the new landscape-analysis command working:
   - `python -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml`
+- Keep the OpenJij example commands working:
+  - `python -m qubo_vqa.cli run --config configs/experiments/openjij_maxcut.yaml`
+  - `python -m qubo_vqa.cli run --config configs/experiments/openjij_min_vertex_cover.yaml`
+- Keep the solver-comparison command working:
+  - `python -m qubo_vqa.cli compare-solvers --config configs/experiments/maxcut_solver_comparison.yaml`
 - Keep the preserved MVC quantum example paths working:
   - `python -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml`
   - `python -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml`
@@ -670,12 +801,12 @@ Outcome at last validation:
 
 The exact next milestone is now:
 
-- `Milestone 13: OpenJij and additional classical sampling baselines`
+- `Milestone 14: Full benchmark campaign`
 
 The most natural next implementation pass is:
 
-1. add an OpenJij-backed solver interface that consumes the same preserved QUBO boundary,
-2. validate it first on the existing MaxCut and Minimum Vertex Cover starter instances,
-3. emit the same `SolverResult` shape plus standard run artifacts for fair comparison,
-4. extend side-by-side comparisons beyond brute force / QAOA / VQE to include the new sampler baseline,
-5. keep the current landscape-analysis path stable while adding the first non-variational sampling comparison.
+1. define a clean batched benchmark workflow over instance families, seeds, and solver settings,
+2. reuse the preserved OpenJij, QAOA, VQE, and brute-force paths rather than creating ad hoc scripts,
+3. save aggregated CSV summaries that can feed later report figures directly,
+4. extend the current starter comparisons from one instance to a small but systematic benchmark grid,
+5. keep the current single-instance validated paths stable while adding the first broader campaign layer.

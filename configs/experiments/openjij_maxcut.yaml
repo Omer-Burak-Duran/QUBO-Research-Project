@@ -1,0 +1,22 @@
+experiment_name: openjij_maxcut
+seed: 7
+
+problem:
+  name: maxcut
+  parameters:
+    graph_family: cycle
+    num_nodes: 4
+    weight: 1.0
+
+solver:
+  name: openjij
+  parameters:
+    sampler: sa
+    num_reads: 64
+    num_sweeps: 1000
+    seed: 7
+    max_variables: 128
+
+output:
+  directory: data/results
+  tag: openjij-maxcut
