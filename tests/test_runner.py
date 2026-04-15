@@ -17,3 +17,20 @@ def test_runner_creates_standard_artifacts(sample_config_path, tmp_path) -> None
     assert (run_directory / "artifacts" / "qubo_model.json").exists()
     assert (run_directory / "plots" / "energy_trace.png").exists()
     assert (run_directory / "plots" / "maxcut_partition.png").exists()
+
+
+def test_runner_supports_minimum_vertex_cover_without_maxcut_plot(
+    mvc_config_path,
+    tmp_path,
+) -> None:
+    """The MVC starter experiment should save standard artifacts without a MaxCut plot."""
+    run_directory = run_experiment_from_config(mvc_config_path, output_directory=tmp_path)
+
+    assert (run_directory / "config.json").exists()
+    assert (run_directory / "metrics.json").exists()
+    assert (run_directory / "result.json").exists()
+    assert (run_directory / "run_metadata.json").exists()
+    assert (run_directory / "trace.json").exists()
+    assert (run_directory / "artifacts" / "qubo_model.json").exists()
+    assert (run_directory / "plots" / "energy_trace.png").exists()
+    assert not (run_directory / "plots" / "maxcut_partition.png").exists()

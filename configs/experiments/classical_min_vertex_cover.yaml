@@ -1,0 +1,18 @@
+experiment_name: classical_min_vertex_cover_path
+seed: 7
+
+problem:
+  name: minimum_vertex_cover
+  parameters:
+    graph_family: path
+    num_nodes: 4
+    penalty_strength: 2.0
+
+solver:
+  name: brute_force
+  parameters:
+    max_variables: 20
+
+output:
+  directory: data/results
+  tag: classical-min-vertex-cover

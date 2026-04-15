@@ -1,0 +1,5 @@
+name: minimum_vertex_cover
+parameters:
+  graph_family: path
+  num_nodes: 4
+  penalty_strength: 2.0

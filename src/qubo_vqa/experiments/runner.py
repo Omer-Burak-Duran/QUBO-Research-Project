@@ -8,6 +8,7 @@ from typing import Any
 from qubo_vqa.experiments.config import ExperimentConfig, load_experiment_config
 from qubo_vqa.experiments.logging import create_run_directory, save_run_outputs
 from qubo_vqa.problems.maxcut import MaxCutInstance
+from qubo_vqa.problems.min_vertex_cover import MinimumVertexCoverInstance
 from qubo_vqa.solvers.classical.brute_force import BruteForceSolver
 from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig
 from qubo_vqa.solvers.quantum.initialization import QAOAInitializationConfig
@@ -17,28 +18,49 @@ from qubo_vqa.utils.random import set_global_seed
 
 def build_problem(config: ExperimentConfig):
     """Construct the problem instance requested by the config."""
-    if config.problem.name != "maxcut":
-        msg = f"Unsupported problem '{config.problem.name}' in the current implementation pass."
-        raise NotImplementedError(msg)
-
     parameters = config.problem.parameters
     graph_family = str(parameters.get("graph_family", "cycle"))
 
-    if graph_family == "cycle":
-        return MaxCutInstance.cycle_graph(
-            num_nodes=int(parameters.get("num_nodes", 4)),
-            weight=float(parameters.get("weight", 1.0)),
-        )
-    if graph_family == "erdos_renyi":
-        return MaxCutInstance.erdos_renyi(
-            num_nodes=int(parameters.get("num_nodes", 6)),
-            edge_probability=float(parameters.get("edge_probability", 0.5)),
-            seed=int(parameters.get("seed", config.seed)),
-            weighted=bool(parameters.get("weighted", False)),
-        )
+    if config.problem.name == "maxcut":
+        if graph_family == "cycle":
+            return MaxCutInstance.cycle_graph(
+                num_nodes=int(parameters.get("num_nodes", 4)),
+                weight=float(parameters.get("weight", 1.0)),
+            )
+        if graph_family == "erdos_renyi":
+            return MaxCutInstance.erdos_renyi(
+                num_nodes=int(parameters.get("num_nodes", 6)),
+                edge_probability=float(parameters.get("edge_probability", 0.5)),
+                seed=int(parameters.get("seed", config.seed)),
+                weighted=bool(parameters.get("weighted", False)),
+            )
+        msg = f"Unsupported MaxCut graph_family '{graph_family}'."
+        raise ValueError(msg)
 
-    msg = f"Unsupported MaxCut graph_family '{graph_family}'."
-    raise ValueError(msg)
+    if config.problem.name == "minimum_vertex_cover":
+        penalty_strength = float(parameters.get("penalty_strength", 2.0))
+        if graph_family == "path":
+            return MinimumVertexCoverInstance.path_graph(
+                num_nodes=int(parameters.get("num_nodes", 4)),
+                penalty_strength=penalty_strength,
+            )
+        if graph_family == "cycle":
+            return MinimumVertexCoverInstance.cycle_graph(
+                num_nodes=int(parameters.get("num_nodes", 4)),
+                penalty_strength=penalty_strength,
+            )
+        if graph_family == "erdos_renyi":
+            return MinimumVertexCoverInstance.erdos_renyi(
+                num_nodes=int(parameters.get("num_nodes", 6)),
+                edge_probability=float(parameters.get("edge_probability", 0.5)),
+                seed=int(parameters.get("seed", config.seed)),
+                penalty_strength=penalty_strength,
+            )
+        msg = f"Unsupported Minimum Vertex Cover graph_family '{graph_family}'."
+        raise ValueError(msg)
+
+    msg = f"Unsupported problem '{config.problem.name}' in the current implementation pass."
+    raise NotImplementedError(msg)
 
 
 def _nested_dict(value: object) -> dict[str, Any]:
@@ -125,6 +147,22 @@ def run_experiment_from_config(
     qubo_model = problem.to_qubo_model()
     solver = build_solver(config)
     result = solver.solve(qubo_model, problem.decode_bitstring)
+    problem_artifacts: dict[str, object] = {"qubo_model": qubo_model.as_dict()}
+
+    if result.metadata.get("ising_model") is not None:
+        problem_artifacts["ising_model"] = result.metadata["ising_model"]
+
+    if problem.name == "maxcut":
+        problem_artifacts.update(
+            {
+                "graph": problem.graph,
+                "left_partition": result.decoded_solution.interpretation.get("left_partition", []),
+                "right_partition": result.decoded_solution.interpretation.get(
+                    "right_partition",
+                    [],
+                ),
+            }
+        )
 
     run_directory = create_run_directory(config.output.directory, config.output.tag)
     save_run_outputs(
@@ -132,12 +170,6 @@ def run_experiment_from_config(
         config=config,
         result=result,
         config_path=config_path,
-        problem_artifacts={
-            "graph": problem.graph,
-            "qubo_model": qubo_model.as_dict(),
-            "ising_model": result.metadata.get("ising_model"),
-            "left_partition": result.decoded_solution.interpretation.get("left_partition", []),
-            "right_partition": result.decoded_solution.interpretation.get("right_partition", []),
-        },
+        problem_artifacts=problem_artifacts,
     )
     return run_directory

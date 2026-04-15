@@ -6,14 +6,16 @@ The repository is currently at a stable intermediate stage.
 
 - The core modeling foundation is implemented.
 - The first classical vertical slice works end to end for MaxCut.
+- A second classical problem path now works end to end for Minimum Vertex Cover.
 - The first quantum vertical slice also works end to end for MaxCut via exact-statevector QAOA.
 - A config-driven Milestone 7 workflow now compares QAOA initialization strategies on that same MaxCut path.
 - Milestone 8 reporting is now implemented for that comparison path with CSV tables and standard QAOA benchmark plots.
-- Later milestones such as MVC, VQE, shot-based/noisy backends, OpenJij, and landscape analysis are still deferred or scaffolded.
+- Later milestones such as VQE, shot-based/noisy backends, OpenJij, and landscape analysis are still deferred or scaffolded.
 
 The current baseline that should be preserved is:
 
 - `MaxCut -> QUBO -> Ising -> brute force -> saved outputs`
+- `Minimum Vertex Cover -> QUBO -> brute force -> saved outputs`
 - `MaxCut -> QUBO -> Ising -> QAOA (statevector) -> saved outputs`
 - `MaxCut -> QAOA initialization comparison (interpolation / warm_start / random) -> saved summary, traces, and plots`
 - `MaxCut -> QAOA initialization comparison -> CSV tables + approximation/runtime/evaluation/parameter plots`
@@ -47,6 +49,11 @@ Do not break those two validated paths in future passes.
   - plot support
 - `Milestone 4: Classical truth baseline`
   - brute-force exact solver
+- `Milestone 9: Minimum Vertex Cover`
+  - QUBO encoding implemented with uncovered-edge penalties
+  - decoder returns selected vertices, uncovered edges, cover size, and feasibility
+  - brute-force validation added on tiny instances
+  - config-driven classical MVC example runs through the current artifact pipeline
 - `Milestone 6: QAOA exact-statevector implementation`
   - QAOA circuit builder
   - exact expectation evaluation
@@ -96,7 +103,6 @@ Do not break those two validated paths in future passes.
 
 ### Scaffolded only
 
-- `Milestone 9: Minimum Vertex Cover`
 - `Milestone 10: VQE exact-statevector`
 - `Milestone 11: Shot-based and noisy evaluation`
 - `Milestone 12: Landscape analysis`
@@ -110,6 +116,16 @@ Do not break those two validated paths in future passes.
 - encoding: QUBO
 - solver: brute force
 - output: decoded solution, metrics, run metadata, trace, QUBO artifact, plots
+
+### Minimum Vertex Cover validated path
+
+- problem: Minimum Vertex Cover
+- encoding: QUBO with uncovered-edge penalties
+- solver: brute force
+- output: decoded solution, metrics, run metadata, trace, QUBO artifact, plots
+- behavior validated in the current pass:
+  - the starter 4-node path example recovered a feasible cover of size `2`
+  - decoded penalty reporting matched uncovered-edge counts in tests
 
 ### Quantum validated path
 
@@ -140,11 +156,12 @@ Do not break those two validated paths in future passes.
 
 ## Current limitations
 
-- Only `MaxCut` is actually implemented as a working problem.
-- `MinimumVertexCoverInstance` and `TravelingSalesmanInstance` are scaffolds only.
+- `MaxCut` and `MinimumVertexCoverInstance` are currently implemented as working problems.
+- `TravelingSalesmanInstance` is still a scaffold.
 - `VQESolver` is still a scaffold.
 - QAOA currently supports only exact-statevector execution.
 - The initialization comparison workflow is currently limited to the MaxCut statevector path.
+- MVC is currently validated only on the classical brute-force path; QAOA/VQE are not yet wired to an MVC example.
 - Milestone 8 plots currently summarize one benchmark instance/config at a time rather than a broader multi-instance campaign.
 - Some deeper QAOA comparison runs can hit the optimizer iteration cap before reporting `optimization_success=true`, even when the best decoded bitstring is already optimal.
 - Shot-based and noisy execution are not implemented yet.
@@ -164,7 +181,7 @@ Do not break those two validated paths in future passes.
 - `qiskit` and `qiskit-aer` remain optional extras in `pyproject.toml`.
 - `requirements.txt` currently installs the full local development environment with quantum support:
   - `-e .[dev,quantum]`
-- TSP is intentionally deferred until MVC and the solver/experiment core are more mature.
+- TSP is intentionally deferred until the solver/experiment core is more mature.
 
 ## Exact validated commands
 
@@ -184,7 +201,7 @@ These commands were revalidated using the repository virtual environment and sho
 
 Outcome at last validation:
 
-- `8 passed`
+- `11 passed`
 
 ### Run the classical MaxCut example
 
@@ -226,6 +243,18 @@ Outcome at last validation:
   - `interpolation rep=2`: about `-3.4031`
   - `random rep=2` mean: about `-3.1162`
 
+### Run the classical Minimum Vertex Cover example
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_min_vertex_cover.yaml
+```
+
+Outcome at last validation:
+
+- command succeeded
+- wrote a timestamped folder under `data/results/`
+- recovered a feasible path-graph cover of size `2` with zero penalty
+
 ### Run lint/integrity check
 
 ```powershell
@@ -245,6 +274,8 @@ Outcome at last validation:
 - Keep the initialization comparison command working:
   - `python -m qubo_vqa.cli compare-initializations --config ...`
 - Keep the current output-folder structure compatible with existing examples.
+- Keep the current classical MVC example working:
+  - `python -m qubo_vqa.cli run --config configs/experiments/classical_min_vertex_cover.yaml`
 - Keep the current classical and QAOA MaxCut examples working while extending later milestones.
 - Keep warm-start behavior tied to previously optimized lower-depth parameters unless there is a strong reason to change it.
 
@@ -252,11 +283,11 @@ Outcome at last validation:
 
 The exact next milestone is:
 
-- `Milestone 9: Minimum Vertex Cover`
+- `Milestone 10: VQE exact-statevector`
 
 The most natural next implementation pass is:
 
-1. implement `Milestone 9` Minimum Vertex Cover on the same QUBO -> solver -> artifact pipeline,
-2. then move to `Milestone 10` VQE,
+1. implement `Milestone 10` VQE on the existing MaxCut path first,
+2. then decide whether to extend that same VQE path to MVC before noise support,
 3. then expand into shot-based/noisy execution,
 4. only after that move into landscape-analysis milestones.
