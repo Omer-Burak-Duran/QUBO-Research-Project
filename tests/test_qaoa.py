@@ -55,3 +55,21 @@ def test_qaoa_solver_returns_trace_and_decoded_solution(cycle_maxcut_instance) -
     assert len(result.metadata["final_parameters"]) == 2
     assert "ising_model" in result.metadata
     assert "best_expectation_energy" in result.metadata
+
+
+def test_qaoa_solver_finds_feasible_mvc_cover(cycle_mvc_instance) -> None:
+    """QAOA should return a feasible tiny MVC cover on the preserved cycle example."""
+    qubo_model = cycle_mvc_instance.to_qubo_model()
+    solver = QAOASolver(
+        reps=1,
+        optimizer_config=QAOAOptimizerConfig(method="COBYLA", maxiter=120, tol=1.0e-3),
+        initialization_config=QAOAInitializationConfig(strategy="interpolation", seed=7),
+    )
+
+    result = solver.solve(qubo_model, cycle_mvc_instance.decode_bitstring)
+
+    assert result.solver_name == "qaoa"
+    assert result.decoded_solution.is_feasible is True
+    assert result.decoded_solution.objective_value == 2.0
+    assert sorted(result.decoded_solution.interpretation["selected_vertices"]) in ([0, 2], [1, 3])
+    assert "ising_model" in result.metadata

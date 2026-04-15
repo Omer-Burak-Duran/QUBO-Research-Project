@@ -9,11 +9,16 @@ import numpy as np
 from scipy.optimize import minimize
 
 from qubo_vqa.converters import qubo_to_ising
-from qubo_vqa.core.ising import IsingModel
 from qubo_vqa.core.qubo import QUBOModel
 from qubo_vqa.core.result import SolverResult, SolverTraceEntry
 from qubo_vqa.solvers.base import Decoder, Solver
-from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig, build_backend
+from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig
+from qubo_vqa.solvers.quantum.common import (
+    VariationalEvaluation,
+    evaluate_statevector_circuit,
+    precompute_ising_basis_energies,
+    top_basis_probabilities,
+)
 from qubo_vqa.solvers.quantum.initialization import (
     QAOAInitializationConfig,
     initialize_qaoa_parameters,
@@ -40,28 +45,6 @@ class QAOAOptimizerConfig:
         }
 
 
-@dataclass(slots=True)
-class QAOAEvaluation:
-    """One evaluated parameter setting and its exact basis distribution."""
-
-    parameters: np.ndarray
-    expectation_energy: float
-    dominant_bitstring: tuple[int, ...]
-    dominant_probability: float
-    dominant_bitstring_energy: float
-    probabilities: np.ndarray
-
-
-def index_to_bitstring(index: int, num_variables: int) -> tuple[int, ...]:
-    """Convert a basis-state index to a bitstring ordered by qubit index."""
-    return tuple((index >> qubit) & 1 for qubit in range(num_variables))
-
-
-def bitstring_to_spins(bitstring: tuple[int, ...]) -> tuple[int, ...]:
-    """Map a binary bitstring to Ising spins with 0 -> +1 and 1 -> -1."""
-    return tuple(1 - 2 * bit for bit in bitstring)
-
-
 def split_qaoa_parameters(parameters: np.ndarray, reps: int) -> tuple[np.ndarray, np.ndarray]:
     """Split a flat parameter vector into gamma and beta blocks."""
     parameter_vector = np.asarray(parameters, dtype=float)
@@ -71,19 +54,7 @@ def split_qaoa_parameters(parameters: np.ndarray, reps: int) -> tuple[np.ndarray
     return parameter_vector[:reps], parameter_vector[reps:]
 
 
-def precompute_ising_basis_energies(ising_model: IsingModel) -> np.ndarray:
-    """Precompute the Ising energy of every computational basis state."""
-    num_variables = ising_model.num_variables()
-    return np.asarray(
-        [
-            ising_model.energy(bitstring_to_spins(index_to_bitstring(index, num_variables)))
-            for index in range(2**num_variables)
-        ],
-        dtype=float,
-    )
-
-
-def build_qaoa_circuit(ising_model: IsingModel, parameters: np.ndarray, reps: int):
+def build_qaoa_circuit(ising_model, parameters: np.ndarray, reps: int):
     """Construct the standard QAOA circuit for a diagonal Ising Hamiltonian."""
     try:
         from qiskit import QuantumCircuit
@@ -112,46 +83,20 @@ def build_qaoa_circuit(ising_model: IsingModel, parameters: np.ndarray, reps: in
     return circuit
 
 
-def top_basis_probabilities(
-    probabilities: np.ndarray,
-    basis_energies: np.ndarray,
-    limit: int = 5,
-) -> list[dict[str, object]]:
-    """Summarize the most probable basis states for logging."""
-    num_variables = int(np.log2(len(probabilities)))
-    ranked_indices = np.argsort(probabilities)[::-1][:limit]
-    return [
-        {
-            "bitstring": list(index_to_bitstring(int(index), num_variables)),
-            "probability": float(probabilities[index]),
-            "energy": float(basis_energies[index]),
-        }
-        for index in ranked_indices
-    ]
-
-
 def evaluate_qaoa_parameters(
-    ising_model: IsingModel,
+    ising_model,
     parameters: np.ndarray,
     reps: int,
     basis_energies: np.ndarray,
     backend_config: QuantumBackendConfig,
-) -> QAOAEvaluation:
+) -> VariationalEvaluation:
     """Evaluate one QAOA parameter vector exactly in the computational basis."""
-    backend = build_backend(backend_config)
     circuit = build_qaoa_circuit(ising_model, parameters, reps)
-    probabilities = backend.bitstring_probabilities(circuit)
-    expectation_energy = float(np.dot(probabilities, basis_energies))
-    dominant_index = int(np.argmax(probabilities))
-    dominant_bitstring = index_to_bitstring(dominant_index, ising_model.num_variables())
-
-    return QAOAEvaluation(
-        parameters=np.asarray(parameters, dtype=float),
-        expectation_energy=expectation_energy,
-        dominant_bitstring=dominant_bitstring,
-        dominant_probability=float(probabilities[dominant_index]),
-        dominant_bitstring_energy=float(basis_energies[dominant_index]),
-        probabilities=probabilities,
+    return evaluate_statevector_circuit(
+        circuit=circuit,
+        parameters=parameters,
+        basis_energies=basis_energies,
+        backend_config=backend_config,
     )
 
 
@@ -184,7 +129,7 @@ class QAOASolver(Solver):
             previous_parameters=self.previous_parameters,
         )
         trace: list[SolverTraceEntry] = []
-        best_evaluation: QAOAEvaluation | None = None
+        best_evaluation: VariationalEvaluation | None = None
 
         started_at = perf_counter()
 

@@ -23,6 +23,12 @@ def path_mvc_instance() -> MinimumVertexCoverInstance:
 
 
 @pytest.fixture()
+def cycle_mvc_instance() -> MinimumVertexCoverInstance:
+    """Return a small cycle Minimum Vertex Cover instance with a known optimum."""
+    return MinimumVertexCoverInstance.cycle_graph(num_nodes=4, penalty_strength=2.0)
+
+
+@pytest.fixture()
 def sample_config_path() -> Path:
     """Return the path to the starter runnable example config."""
     return Path("configs/experiments/classical_maxcut.yaml")
@@ -32,6 +38,24 @@ def sample_config_path() -> Path:
 def qaoa_config_path() -> Path:
     """Return the path to the starter QAOA example config."""
     return Path("configs/experiments/qaoa_maxcut_statevector.yaml")
+
+
+@pytest.fixture()
+def vqe_config_path() -> Path:
+    """Return the path to the starter VQE example config."""
+    return Path("configs/experiments/vqe_maxcut_statevector.yaml")
+
+
+@pytest.fixture()
+def qaoa_mvc_config_path() -> Path:
+    """Return the path to the starter QAOA MVC example config."""
+    return Path("configs/experiments/qaoa_min_vertex_cover_statevector.yaml")
+
+
+@pytest.fixture()
+def vqe_mvc_config_path() -> Path:
+    """Return the path to the starter VQE MVC example config."""
+    return Path("configs/experiments/vqe_min_vertex_cover_statevector.yaml")
 
 
 @pytest.fixture()

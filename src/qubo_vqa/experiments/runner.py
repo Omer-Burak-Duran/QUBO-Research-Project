@@ -13,6 +13,11 @@ from qubo_vqa.solvers.classical.brute_force import BruteForceSolver
 from qubo_vqa.solvers.quantum.backends import QuantumBackendConfig
 from qubo_vqa.solvers.quantum.initialization import QAOAInitializationConfig
 from qubo_vqa.solvers.quantum.qaoa import QAOAOptimizerConfig, QAOASolver
+from qubo_vqa.solvers.quantum.vqe import (
+    VQEInitializationConfig,
+    VQEOptimizerConfig,
+    VQESolver,
+)
 from qubo_vqa.utils.random import set_global_seed
 
 
@@ -125,6 +130,61 @@ def build_solver(config: ExperimentConfig):
                     if initialization_parameters.get("seed") is not None
                     else config.seed
                 ),
+            ),
+            max_variables=int(parameters.get("max_variables", 12)),
+        )
+
+    if config.solver.name == "vqe":
+        parameters = dict(config.solver.parameters)
+        optimizer_parameters = _nested_dict(parameters.get("optimizer"))
+        initialization_parameters = _nested_dict(parameters.get("initialization"))
+        backend_parameters = _nested_dict(parameters.get("backend"))
+        ansatz_parameters = _nested_dict(parameters.get("ansatz"))
+
+        return VQESolver(
+            ansatz_name=str(ansatz_parameters.get("family", "hardware_efficient")),
+            ansatz_depth=int(ansatz_parameters.get("depth", 1)),
+            backend_config=QuantumBackendConfig(
+                mode=str(
+                    backend_parameters.get(
+                        "mode",
+                        parameters.get("backend_mode", "statevector"),
+                    )
+                ),
+                shots=(
+                    int(backend_parameters["shots"])
+                    if backend_parameters.get("shots") is not None
+                    else None
+                ),
+                noise_model_name=(
+                    str(backend_parameters["noise_model_name"])
+                    if backend_parameters.get("noise_model_name") is not None
+                    else None
+                ),
+            ),
+            optimizer_config=VQEOptimizerConfig(
+                method=str(
+                    optimizer_parameters.get(
+                        "name",
+                        optimizer_parameters.get("method", "COBYLA"),
+                    )
+                ),
+                maxiter=int(optimizer_parameters.get("maxiter", 80)),
+                tol=(
+                    float(optimizer_parameters["tol"])
+                    if optimizer_parameters.get("tol") is not None
+                    else None
+                ),
+                options=_nested_dict(optimizer_parameters.get("options")),
+            ),
+            initialization_config=VQEInitializationConfig(
+                strategy=str(initialization_parameters.get("strategy", "small_random")),
+                seed=(
+                    int(initialization_parameters["seed"])
+                    if initialization_parameters.get("seed") is not None
+                    else config.seed
+                ),
+                scale=float(initialization_parameters.get("scale", 0.2)),
             ),
             max_variables=int(parameters.get("max_variables", 12)),
         )

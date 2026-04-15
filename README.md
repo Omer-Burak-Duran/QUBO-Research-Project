@@ -17,10 +17,11 @@ This repository currently implements the current stable foundation:
 - a complete `Minimum Vertex Cover` benchmark encoder and decoder,
 - an exact brute-force classical baseline,
 - a config-driven experiment runner with saved JSON artifacts and plots,
-- an exact-statevector QAOA path for small MaxCut instances,
+- exact-statevector QAOA paths for small MaxCut and tiny MVC instances,
+- exact-statevector VQE paths for small MaxCut and tiny MVC instances,
 - a config-driven QAOA initialization comparison workflow,
 - standard QAOA comparison tables and benchmark-style plots for the current MaxCut path,
-- starter scaffolding for later VQE, TSP, and landscape work.
+- starter scaffolding for later TSP and landscape work.
 
 ## Installation
 
@@ -42,11 +43,33 @@ python -m qubo_vqa.cli run --config configs/experiments/classical_maxcut.yaml
 python -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_statevector.yaml
 ```
 
+## Run the VQE example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_statevector.yaml
+```
+
 ## Run the Minimum Vertex Cover example
 
 ```bash
 python -m qubo_vqa.cli run --config configs/experiments/classical_min_vertex_cover.yaml
 ```
+
+## Run the QAOA MVC example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml
+```
+
+## Run the VQE MVC example
+
+```bash
+python -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml
+```
+
+These two configs use the same tiny 4-node MVC cycle instance and emit the same
+standardized result schema, so their `result.json` and `metrics.json` outputs can
+be compared side by side with the existing QAOA/VQE MaxCut runs.
 
 ## Compare QAOA initialization strategies
 
@@ -70,6 +93,9 @@ The validated repository commands in this project have been run through the virt
 & ".\.venv\Scripts\python.exe" -m pytest
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_maxcut.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_statevector.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_min_vertex_cover.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml
+& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-initializations --config configs/experiments/qaoa_initialization_comparison.yaml
 ```
