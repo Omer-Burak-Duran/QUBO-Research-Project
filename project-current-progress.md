@@ -957,3 +957,43 @@ The most natural next implementation passes are optional extensions beyond the 1
 2. improve VQE optimizer-status handling so success metrics align more cleanly with decoded solution quality,
 3. deepen automatic linkage between campaign summaries and landscape-analysis outputs,
 4. add stronger sweep-management ergonomics if campaigns become much larger than the current repository-level validation set.
+
+## Experiment and report stage
+
+The repository has now also been taken through an experiment-and-report pass grounded in fresh local executions rather than assumed historical outputs.
+
+### Artifacts created
+
+- `how-to-run.md`
+- `project-report.md`
+
+### Validation and experiment session used for the report
+
+The report-stage outputs were generated under:
+
+- `data/results/session-20260415/`
+
+Commands executed in this session:
+
+- `& ".\.venv\Scripts\python.exe" -m pytest`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_maxcut.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/classical_min_vertex_cover.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_maxcut_statevector.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_maxcut_statevector.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/qaoa_min_vertex_cover_statevector.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run --config configs/experiments/vqe_min_vertex_cover_statevector.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-solvers --config configs/experiments/maxcut_solver_comparison.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-backends --config configs/experiments/qaoa_backend_comparison.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli compare-initializations --config configs/experiments/qaoa_initialization_comparison.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli analyze-landscape --config configs/experiments/qaoa_landscape_analysis.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/starter_benchmark_campaign.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/moderate_benchmark_campaign.yaml --output-dir data/results/session-20260415`
+- `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml --output-dir data/results/session-20260415`
+
+Observed outcomes in this pass:
+
+- tests passed: `44 passed`
+- all planned commands above completed successfully
+- the report is based on fresh generated outputs, not checked-in result folders
+- the strongest recurring interpretation caveat remains the optimizer-status vs decoded-solution-quality gap, especially in several VQE benchmark slices
+- constrained Minimum Vertex Cover campaign rows should be read with feasibility and penalty fields, not only with `optimality_ratio`
