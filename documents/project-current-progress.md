@@ -17,7 +17,7 @@ The repository is currently at a stable intermediate stage with both classical a
 - An OpenJij classical baseline now works end to end on the preserved small MaxCut and MVC paths.
 - A config-driven solver comparison workflow now benchmarks brute force, OpenJij, QAOA, and VQE on the shared MaxCut starter instance.
 - Config-driven benchmark campaigns now cover preserved starter, broader moderate, and backend-focused benchmark slices for MaxCut and MVC with grouped aggregate tables plus interpretation notes.
-- All 15 planned milestones are now covered at repository level; broader research-scale datasets and TSP completion remain future extensions rather than uncovered milestone work.
+- All 15 planned milestones are now covered at repository level; broader research-scale datasets remain as future extensions rather than uncovered milestone work.
 
 The current baseline that should be preserved is:
 
@@ -239,7 +239,6 @@ Do not break these validated paths in future passes.
 
 ### Scaffolded only
 
-- TSP remains intentionally deferred as a future benchmark extension
 - broader report-scale or publication-scale campaign datasets remain optional follow-on work
 
 ## What works end to end right now
@@ -601,7 +600,6 @@ Do not break these validated paths in future passes.
 - `openjij` remains an optional extra under the classical dependency group in `pyproject.toml`.
 - `requirements.txt` currently installs the full local development environment with quantum support:
   - `-e .[dev,classical,quantum]`
-- TSP is intentionally deferred until the solver/experiment core is more mature.
 
 ## Exact validated commands
 
@@ -909,7 +907,7 @@ Outcome at last validation:
 
 - passed
 
-## What a new agent should preserve
+## What should be preserved
 
 - Keep the current package layout and modular boundaries.
 - Keep `project-current-progress.md` aligned with the actual validated repository state.
@@ -994,6 +992,3 @@ Observed outcomes in this pass:
 
 - tests passed: `44 passed`
 - all planned commands above completed successfully
-- the report is based on fresh generated outputs, not checked-in result folders
-- the strongest recurring interpretation caveat remains the optimizer-status vs decoded-solution-quality gap, especially in several VQE benchmark slices
-- constrained Minimum Vertex Cover campaign rows should be read with feasibility and penalty fields, not only with `optimality_ratio`

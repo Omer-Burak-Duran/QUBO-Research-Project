@@ -54,18 +54,16 @@ The first major version of the project should include:
 
 - QUBO modeling of **MaxCut**,
 - QUBO modeling of **Minimum Vertex Cover**,
-- QUBO modeling of **Traveling Salesman Problem (TSP)**,
 - **QAOA** on these benchmark problems,
 - **VQE** on the corresponding cost Hamiltonians,
 - classical baselines,
 - plotting and experiment logging,
 - small-scale landscape analysis.
 
-This is a good scope because the three problems have different modeling character:
+This is a good scope because the two problems have different modeling character:
 
 - **MaxCut** is the cleanest starting point and almost “native” to QUBO.
 - **Minimum Vertex Cover** introduces explicit constraint penalties and is good for learning penalty design.
-- **TSP** is much heavier and tests whether the software stays modular when encodings become larger and more structured. Lucas’ Ising formulation for TSP uses order variables and adds a weighted tour term on top of Hamiltonian-cycle constraints, which makes it a good stress test for the framework.
 
 This scope is also expandable. If later we add another problem, for example **Facility Location**, we should not need to redesign the project. We should only add:
 
@@ -185,7 +183,7 @@ Strongly recommended for graph-based benchmark problems. It simplifies:
 - visualization,
 - access to adjacency and edge weights.
 
-For MaxCut, Minimum Vertex Cover, and TSP instances, this is very practical.
+For MaxCut and Minimum Vertex Cover this is very practical.
 
 ## 5.2 Quantum stack
 
@@ -292,8 +290,7 @@ project-root/
 │   ├── base.yaml
 │   ├── problems/
 │   │   ├── maxcut.yaml
-│   │   ├── min_vertex_cover.yaml
-│   │   └── tsp.yaml
+│   │   └── min_vertex_cover.yaml
 │   └── experiments/
 │       ├── qaoa_sweep.yaml
 │       ├── vqe_sweep.yaml
@@ -314,7 +311,6 @@ project-root/
 │       │   ├── base.py
 │       │   ├── maxcut.py
 │       │   ├── min_vertex_cover.py
-│       │   ├── tsp.py
 │       │   └── generators.py
 │       ├── converters/
 │       │   ├── qubo_to_ising.py
@@ -366,8 +362,7 @@ This structure separates concerns in a way that supports future growth.
 Represents a concrete instance such as:
 
 - a specific graph for MaxCut,
-- a specific graph for Minimum Vertex Cover,
-- a specific weighted graph for TSP.
+- a specific graph for Minimum Vertex Cover.
 
 It should contain raw problem data only.
 
@@ -405,8 +400,7 @@ Suggested fields:
 Maps a raw bitstring back to meaning:
 
 - cut partition,
-- chosen cover vertices,
-- tour order.
+- chosen cover vertices.
 
 It should also report:
 
@@ -465,25 +459,6 @@ Then:
 
 - minimize the number of selected vertices,
 - penalize every uncovered edge.
-
-## 9.3 TSP
-
-TSP is optional and it should be added only after the first two problems are working.
-
-A standard encoding uses binary assignment variables like `x[v, j]`, meaning city `v` is placed at tour position `j`. The formulation includes:
-
-- one city per position,
-- one position per city,
-- weighted transitions between consecutive positions.
-
-Lucas’ Ising construction uses exactly this ordering-style representation and notes the variable cost scaling like ((N-1)^2) after a simple symmetry fixing.
-
-Why TSP should come later:
-
-- it has larger variable count,
-- more penalties,
-- more fragile decoding,
-- more room for silent bugs.
 
 ---
 
@@ -745,7 +720,7 @@ This order keeps the difficulty increasing gradually.
 
 ---
 
-## 18. Final recommendation
+## 18. Final recommendations
 
 The best version of this project is **not** the one with the most libraries. It is the one with the clearest boundaries:
 

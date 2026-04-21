@@ -16,8 +16,6 @@ The current implemented benchmark scope is:
 - comparison workflows for solvers, QAOA initialization, and backends
 - benchmark campaigns and landscape analysis
 
-`TSP` code exists as deferred scaffolding, but it is not part of the validated runnable benchmark surface.
-
 ## Prerequisites
 
 - Windows PowerShell commands below assume you are in the repository root.

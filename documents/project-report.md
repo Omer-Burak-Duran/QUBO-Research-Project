@@ -4,7 +4,7 @@
 
 This project studies a small but complete research workflow for Quadratic Unconstrained Binary Optimization (QUBO) modeling and variational quantum optimization. The implemented repository encodes MaxCut and Minimum Vertex Cover as QUBO problems, converts those models to Ising form for quantum cost evaluation, and compares classical and variational solvers through a common experiment pipeline. The software includes brute-force exact references, an OpenJij sampling baseline, QAOA, VQE, backend comparisons, initialization studies, landscape analysis, and benchmark campaigns driven by YAML configuration files.
 
-The repository was inspected first and then evaluated through real executions in this session. The executed workflow included the full test suite, representative single-instance runs for both benchmark families, solver comparison, QAOA backend comparison, QAOA initialization comparison, landscape analysis, and three benchmark campaigns. The tests passed cleanly (`44 passed`). On the smallest preserved benchmark instances, all main solver families recovered optimal decoded solutions. The backend comparison showed that QAOA preserved optimal decoded MaxCut solutions across statevector, shot-based, and noisy execution, while expectation energies degraded under noise and noisy simulation increased runtime. The initialization comparison showed that depth-2 warm-start QAOA gave the strongest expectation value among the tested strategies, although some deeper runs still hit the optimizer iteration cap. The broader moderate campaign remained effective overall, but it also exposed the main limitations of the repository: small instance sizes, occasional optimizer-status versus solution-quality disagreement, and constrained cases where feasibility must be checked separately from raw objective ratios.
+The repository was inspected first and then evaluated through real executions in this session. The executed workflow included the full test suite, representative single-instance runs for both benchmark families, solver comparison, QAOA backend comparison, QAOA initialization comparison, landscape analysis, and three benchmark campaigns. The tests passed cleanly (`44 passed`). On the smallest preserved benchmark instances, all main solver families recovered optimal decoded solutions. The backend comparison showed that QAOA preserved optimal decoded MaxCut solutions across statevector, shot-based, and noisy execution, while expectation energies degraded under noise and noisy simulation increased runtime. The initialization comparison showed that depth-2 warm-start QAOA gave the strongest expectation value among the tested strategies, although some deeper runs still hit the optimizer iteration cap. The broader moderate campaign remained effective overall, but it also exposed the main current limitations/problems of the repository: small instance sizes, occasional optimizer-status versus solution-quality disagreement, and constrained cases where feasibility must be checked separately from raw objective ratios.
 
 ## Introduction
 
@@ -46,7 +46,6 @@ The repository goals were to:
 4. compare solver families and backend modes through shared experiment schemas; and
 5. support first-pass trainability and landscape analysis.
 
-The implemented benchmark scope in the current repository is narrower than the broadest design vision. The runnable and validated problem families are MaxCut and Minimum Vertex Cover. TSP code exists only as deferred scaffolding and was not included in the executed study.
 
 ## Software and Code Architecture
 
@@ -145,7 +144,7 @@ At `p=1`, all strategies were effectively equivalent on this small cycle and pro
 - `interpolation`, `p=2`: mean best expectation `-3.3518641`
 - `random`, `p=2`: mean best expectation `-3.0220253`
 
-However, all three depth-2 strategy groups reported optimizer success rate `0.0` in the aggregate summary because the runs hit the configured COBYLA iteration cap. This is a clear example of the repository’s recurring distinction between decoded solution quality and optimizer-reported completion.
+However, all three depth-2 strategy groups reported optimizer success rate `0.0` in the aggregate summary because the runs hit the configured COBYLA iteration cap. Need to investigate and fix this behaviour/problem.
 
 ### Landscape analysis
 
@@ -171,7 +170,7 @@ The starter campaign executed `12` runs across `2` problem cases and `6` solver 
 - all runs had feasible decoded solutions;
 - all runs achieved mean optimality ratio `1.0`.
 
-The most important campaign-level observation was not about solution quality but about reporting semantics. QAOA had optimizer success rate `1.0` on the starter slice, while VQE had optimizer success rate `0.0` even though its decoded solution quality remained perfect. This confirms that the repository already captures a meaningful status-quality gap and that conclusions should not rely on optimizer flags alone.
+Note: QAOA had optimizer success rate `1.0` on the starter slice, while VQE had optimizer success rate `0.0` even though its decoded solution quality remained perfect. Need to  investigate and/or fix this behaviour/problem.
 
 ### Moderate benchmark campaign
 
@@ -199,7 +198,7 @@ This campaign therefore gives the clearest evidence that the repository is not m
 The backend-focused campaign executed `16` runs across `2` problem cases and `8` solver cases. On this small backend benchmark slice, the decoded optimality ratio remained `1.0` across all backend groups. The backend notes mainly reinforce two conclusions:
 
 - QAOA remained stable across `statevector`, `shot_based`, and `noisy` on these tiny instances, with optimizer success rate `1.0`.
-- VQE again showed optimizer-status inconsistencies. The campaign notes report optimizer success rates of `0.0` for statevector VQE and `0.5` for shot-based and noisy VQE, even though the decoded solution quality remained perfect on the same slice.
+- VQE again showed optimizer-status inconsistencies. The campaign notes report optimizer success rates of `0.0` for statevector VQE and `0.5` for shot-based and noisy VQE, even though the decoded solution quality remained perfect on the same slice. Need to investigate and/or fix this behaviour/problem.
 
 ## Discussion
 
@@ -208,8 +207,6 @@ The executed results support a clear course-project conclusion. The repository s
 From a problem-modeling perspective, the repository demonstrates that a single QUBO-centered workflow can support both a direct benchmark like MaxCut and a penalty-based constrained benchmark like Minimum Vertex Cover. This is an important software result because the same experiment interfaces were used across classical and quantum methods.
 
 From an algorithmic perspective, the strongest evidence is mixed rather than extreme. On the smallest preserved instances, QAOA, VQE, brute force, and OpenJij all reached the same optimal decoded solutions. That is useful as validation but not as a sign of quantum advantage. The more informative observations appear in the analysis workflows and the moderate campaign: backend noise degrades QAOA expectation values, warm-start initialization improves depth-2 QAOA expectation quality, and the broader statevector campaign shows that some VQE settings and some QAOA configurations degrade on less trivial six-variable cases.
-
-The experiments also show that optimizer-status metadata should be interpreted carefully. Across multiple workflows, decoded solutions can be optimal while `optimization_success` remains false. That means success reporting in this repository is more nuanced than a single boolean.
 
 ## Limitations
 
@@ -220,10 +217,6 @@ First, the benchmark scale is small. The core preserved runs use 4-node examples
 Second, the executed results do not support any claim of quantum advantage. The repository demonstrates a sound experimental workflow and meaningful method comparisons on small benchmarks, but the datasets are far too small and simulator-based to support stronger claims.
 
 Third, constrained problems require careful metric interpretation. In the moderate campaign, one Minimum Vertex Cover Erdős-Rényi case produced an `optimality_ratio` above `1.0` for an infeasible QAOA run because the aggregate ratio was derived from the decoded objective size while penalty and feasibility were recorded separately. This does not invalidate the run logs, but it means constrained-case summaries must be read together with feasibility and penalty information rather than as standalone evidence.
-
-Fourth, the repository currently contains a real status-quality gap for several VQE cases. Optimal decoded solutions can coexist with optimizer success rate `0.0`. This is itself a useful experimental observation, but it also limits the cleanliness of campaign-level interpretation.
-
-Finally, TSP is not part of the actual completed benchmark surface despite appearing in earlier design-oriented documentation. The repository state and current progress document both show that TSP remains deferred.
 
 ## Conclusion
 
