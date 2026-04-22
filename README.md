@@ -27,7 +27,7 @@ This repository currently implements the current stable foundation:
 - config-driven benchmark campaigns with grouped aggregate tables and interpretation notes,
 - a config-driven QAOA initialization comparison workflow,
 - standard QAOA comparison tables and benchmark-style plots for the current MaxCut path,
-- a first preserved landscape-analysis workflow for the current MaxCut path.
+- a landscape-analysis workflow for the current MaxCut path.
 
 ## Installation
 

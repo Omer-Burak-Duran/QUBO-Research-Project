@@ -458,15 +458,13 @@ We can answer the following clearly:
 
 ---
 
-## Recommended execution order in one line
-
-Build in this order:
+## Planned implementation order
 
 **foundation → core models → MaxCut → brute force → QAOA → logging/plots → MVC → VQE → shot-based mode → landscape analysis → full benchmark campaign**
 
 ---
 
-## Minimum success criteria for the whole project
+## Minimum success criteria for the project
 
 At the end of the project, the framework should be able to do all of the following:
 
@@ -478,5 +476,3 @@ At the end of the project, the framework should be able to do all of the followi
 - save reproducible results,
 - produce landscape and convergence plots,
 - support easy addition of a future problem such as Facility Location.
-
-If all of that works, then the project is not just “some scripts.” It is a serious reusable research platform.

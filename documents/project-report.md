@@ -1,41 +1,5 @@
 # QUBO Modeling and Variational Quantum Optimization for Small MaxCut and Minimum Vertex Cover Benchmarks
 
-## Abstract
-
-This project studies a small but complete research workflow for Quadratic Unconstrained Binary Optimization (QUBO) modeling and variational quantum optimization. The implemented repository encodes MaxCut and Minimum Vertex Cover as QUBO problems, converts those models to Ising form for quantum cost evaluation, and compares classical and variational solvers through a common experiment pipeline. The software includes brute-force exact references, an OpenJij sampling baseline, QAOA, VQE, backend comparisons, initialization studies, landscape analysis, and benchmark campaigns driven by YAML configuration files.
-
-The repository was inspected first and then evaluated through real executions in this session. The executed workflow included the full test suite, representative single-instance runs for both benchmark families, solver comparison, QAOA backend comparison, QAOA initialization comparison, landscape analysis, and three benchmark campaigns. The tests passed cleanly (`44 passed`). On the smallest preserved benchmark instances, all main solver families recovered optimal decoded solutions. The backend comparison showed that QAOA preserved optimal decoded MaxCut solutions across statevector, shot-based, and noisy execution, while expectation energies degraded under noise and noisy simulation increased runtime. The initialization comparison showed that depth-2 warm-start QAOA gave the strongest expectation value among the tested strategies, although some deeper runs still hit the optimizer iteration cap. The broader moderate campaign remained effective overall, but it also exposed the main current limitations/problems of the repository: small instance sizes, occasional optimizer-status versus solution-quality disagreement, and constrained cases where feasibility must be checked separately from raw objective ratios.
-
-## Introduction
-
-QUBO modeling is a common route for expressing discrete optimization problems in a form that is compatible with both classical binary optimization methods and quantum-inspired or quantum variational methods. In this project, QUBO is not used as a temporary representation. It is the central internal model that connects problem encoding, classical baselines, quantum cost construction, and experiment analysis.
-
-The repository was built as a course-scale research platform rather than as a single script collection. The goal is to make the full workflow transparent: define a benchmark problem, encode it into QUBO, convert the QUBO into Ising form when needed, run several solver families on the same instance, and save standardized outputs that can be inspected and compared later.
-
-This report documents the current completed repository state. It focuses on what is actually implemented and what was actually executed. It does not assume larger benchmark claims than the code and data support.
-
-## Research Background
-
-### QUBO and QUBO modeling
-
-A QUBO problem is expressed with binary variables and a quadratic objective. Its importance comes from the fact that many constrained combinatorial problems can be rewritten as unconstrained binary optimization problems by adding penalty terms. That makes QUBO a convenient meeting point for classical discrete optimization and quantum cost-Hamiltonian methods.
-
-In practice, QUBO modeling requires more than writing down a matrix. A useful research workflow must also define the meaning of each binary variable, the penalty structure, the decoding of bitstrings back to problem semantics, and the distinction between feasible and infeasible candidate solutions. This repository follows that approach and keeps those modeling details explicit.
-
-### MaxCut and Minimum Vertex Cover
-
-MaxCut is a standard benchmark for QUBO and variational quantum optimization because its binary structure is direct. A bitstring partitions graph vertices into two sets, and the objective is the number or weight of edges crossing the cut. It is a natural starting point for validating both encodings and solver behavior.
-
-Minimum Vertex Cover is a complementary benchmark because it requires explicit constraint handling. Binary variables indicate whether a vertex is selected. The objective is to minimize the cover size, while penalty terms discourage uncovered edges. This makes the problem more useful for studying how semantic objective values, penalties, and feasibility interact in the recorded results.
-
-### Variational quantum algorithms, QAOA, and VQE
-
-Variational quantum algorithms are hybrid methods. A parameterized quantum state is prepared, a cost quantity is evaluated, and a classical optimizer updates the parameters. Their performance depends not only on the encoded problem but also on ansatz structure, parameter initialization, backend noise, finite-shot estimation, and the quality of the outer-loop optimizer.
-
-QAOA is tailored to combinatorial optimization. It alternates problem-dependent cost evolution with a mixer and is naturally aligned with Ising-style objective functions derived from QUBO models. In this repository, QAOA supports configurable depth, initialization strategies, exact-statevector evaluation, finite-shot evaluation, and a named noisy backend mode.
-
-VQE is more general. Instead of a QAOA-style alternating structure, it minimizes the expectation value of the cost Hamiltonian with a parameterized ansatz. The repository supports both a problem-aware ansatz and a hardware-efficient ansatz, which allows limited comparisons between more structured and less structured variational families on the same encoded instances.
-
 ## Project Objectives and Scope
 
 The repository goals were to:
@@ -60,13 +24,9 @@ The main modules are:
 - `experiments/` for the CLI-connected execution workflows;
 - `analysis/` for metrics, plots, campaign summaries, landscape tools, and gradient statistics.
 
-The main user entry point is `python -m qubo_vqa.cli`. Config-driven execution is a central design choice. YAML files in `configs/experiments/` define problems, solver settings, output tags, comparisons, and campaigns. Every executed run writes structured artifacts such as `config.json`, `result.json`, `metrics.json`, `trace.json`, plots, and aggregate summaries.
+The main user entry point is `python -m qubo_vqa.cli`. Config-driven execution. YAML files in `configs/experiments/` define problems, solver settings, output tags, comparisons, and campaigns. Every executed run writes structured artifacts such as `config.json`, `result.json`, `metrics.json`, `trace.json`, plots, and aggregate summaries.
 
 ## Experimental Methodology
-
-### Execution principle
-
-Only actual executed results were used. The repository and documentation were inspected first, then the code was run through the documented CLI/config workflow. No results were copied from prior repository history because `data/` is ignored by git and the local `data/results` directory was empty before this session.
 
 ### Environment and validation
 
@@ -75,8 +35,6 @@ The project was run with the repository virtual environment and Python `3.12.10`
 ```text
 44 passed
 ```
-
-This established that the shipped experiment workflows and tests were functioning before any benchmark claims were made.
 
 ### Executed experiments
 
@@ -170,7 +128,7 @@ The starter campaign executed `12` runs across `2` problem cases and `6` solver 
 - all runs had feasible decoded solutions;
 - all runs achieved mean optimality ratio `1.0`.
 
-Note: QAOA had optimizer success rate `1.0` on the starter slice, while VQE had optimizer success rate `0.0` even though its decoded solution quality remained perfect. Need to  investigate and/or fix this behaviour/problem.
+Note: QAOA had optimizer success rate `1.0` on the starter slice, while VQE had optimizer success rate `0.0` even though its decoded solution quality remained perfect. Need to investigate and/or fix this behaviour/problem.
 
 ### Moderate benchmark campaign
 
@@ -202,29 +160,25 @@ The backend-focused campaign executed `16` runs across `2` problem cases and `8`
 
 ## Discussion
 
-The executed results support a clear course-project conclusion. The repository succeeds as a small, reproducible research platform for QUBO-centric benchmarking. The core software boundary is coherent, the CLI workflows are functional, the tests pass, and the experiment system reliably produces structured outputs and plots.
+The core software boundary is coherent, the CLI workflows are functional, the tests pass, and the experiment system reliably produces structured outputs and plots.
 
 From a problem-modeling perspective, the repository demonstrates that a single QUBO-centered workflow can support both a direct benchmark like MaxCut and a penalty-based constrained benchmark like Minimum Vertex Cover. This is an important software result because the same experiment interfaces were used across classical and quantum methods.
 
-From an algorithmic perspective, the strongest evidence is mixed rather than extreme. On the smallest preserved instances, QAOA, VQE, brute force, and OpenJij all reached the same optimal decoded solutions. That is useful as validation but not as a sign of quantum advantage. The more informative observations appear in the analysis workflows and the moderate campaign: backend noise degrades QAOA expectation values, warm-start initialization improves depth-2 QAOA expectation quality, and the broader statevector campaign shows that some VQE settings and some QAOA configurations degrade on less trivial six-variable cases.
+On the smallest preserved instances, QAOA, VQE, brute force, and OpenJij all reached the same optimal decoded solutions. That is useful as validation. The more informative observations appear in the analysis workflows and the moderate campaign: backend noise degrades QAOA expectation values, warm-start initialization improves depth-2 QAOA expectation quality, and the broader statevector campaign shows that some VQE settings and some QAOA configurations degrade on less trivial six-variable cases.
 
 ## Limitations
 
 Several limitations are important for interpreting the study honestly.
 
-First, the benchmark scale is small. The core preserved runs use 4-node examples, and the broader executed campaign reaches only moderate 6-variable cases. These are appropriate for a course-scale software and methods study, but not for claims about scaling to difficult large combinatorial instances.
+First, the benchmark scale is small. The core preserved runs use 4-node examples, and the broader executed campaign reaches only moderate 6-variable cases.
 
-Second, the executed results do not support any claim of quantum advantage. The repository demonstrates a sound experimental workflow and meaningful method comparisons on small benchmarks, but the datasets are far too small and simulator-based to support stronger claims.
-
-Third, constrained problems require careful metric interpretation. In the moderate campaign, one Minimum Vertex Cover Erdős-Rényi case produced an `optimality_ratio` above `1.0` for an infeasible QAOA run because the aggregate ratio was derived from the decoded objective size while penalty and feasibility were recorded separately. This does not invalidate the run logs, but it means constrained-case summaries must be read together with feasibility and penalty information rather than as standalone evidence.
+Second, constrained problems require careful metric interpretation. In the moderate campaign, one Minimum Vertex Cover Erdős-Rényi case produced an `optimality_ratio` above `1.0` for an infeasible QAOA run because the aggregate ratio was derived from the decoded objective size while penalty and feasibility were recorded separately. This does not invalidate the run logs, but it means constrained-case summaries must be read together with feasibility and penalty information rather than as standalone evidence.
 
 ## Conclusion
 
 The completed repository delivers a coherent and reproducible QUBO/VQA research workflow for small MaxCut and Minimum Vertex Cover benchmarks. It implements transparent QUBO modeling, exact classical references, OpenJij sampling, QAOA, VQE, backend comparisons, initialization studies, landscape analysis, and benchmark campaigns under a shared CLI/config interface.
 
-The executed results confirm that the implementation is operational and that the project has moved beyond a minimal proof of concept. The strongest validated outcomes are the clean end-to-end architecture, the consistency of single-run and aggregate artifact generation, the stability of tiny benchmark solutions across solver families, the meaningful backend and initialization analyses, and the broader moderate campaign that begins to reveal nontrivial performance differences.
-
-At the same time, the report must remain modest. The experiments are small, simulator-based, and best understood as a careful research-software study rather than as evidence for superior quantum performance. Within that scope, the project is successful.
+The executed results confirm that the implementation is operational. The strongest validated outcomes are: the clean end-to-end architecture, the consistency of single-run and aggregate artifact generation, the stability of tiny benchmark solutions across solver families, the meaningful backend and initialization analyses, and the broader moderate campaign that begins to reveal nontrivial performance differences.
 
 ## Appendix A: Executed Commands
 
