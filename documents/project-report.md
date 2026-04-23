@@ -180,7 +180,7 @@ The completed repository delivers a coherent and reproducible QUBO/VQA research 
 
 The executed results confirm that the implementation is operational. The strongest validated outcomes are: the clean end-to-end architecture, the consistency of single-run and aggregate artifact generation, the stability of tiny benchmark solutions across solver families, the meaningful backend and initialization analyses, and the broader moderate campaign that begins to reveal nontrivial performance differences.
 
-## Appendix A: Executed Commands
+## Executed Commands
 
 The report is based on the following executed command set:
 
@@ -201,7 +201,7 @@ The report is based on the following executed command set:
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml --output-dir data/results/session-20260415
 ```
 
-## Appendix B: Output Location
+## Output Location
 
 All result folders used for this report are stored under:
 
