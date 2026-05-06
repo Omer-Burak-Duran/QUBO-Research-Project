@@ -1,0 +1,34 @@
+experiment_name: large_final_report_qaoa_init_maxcut_weighted_er8_seed17
+seed: 20260506
+
+problem:
+  name: maxcut
+  parameters:
+    graph_family: erdos_renyi
+    num_nodes: 8
+    edge_probability: 0.4
+    seed: 17
+    weighted: true
+
+solver:
+  parameters:
+    max_variables: 12
+    backend:
+      mode: statevector
+    optimizer:
+      name: COBYLA
+      maxiter: 300
+      tol: 1.0e-3
+
+comparison:
+  reps: [1, 2, 3, 4, 5]
+  strategies:
+    - interpolation
+    - warm_start
+    - random
+  random_trials: 8
+  warm_start_bootstrap_strategy: interpolation
+
+output:
+  directory: data/results
+  tag: large-final-report-qaoa-init-maxcut-weighted-er8-seed17

@@ -1,0 +1,137 @@
+experiment_name: large_final_report_benchmark_campaign
+seed: 20260506
+
+campaign:
+  exact_reference_max_variables: 20
+  problem_sweeps:
+    - name: maxcut
+      label_template: "maxcut-cycle-{num_nodes}"
+      base_parameters:
+        graph_family: cycle
+        weight: 1.0
+      sweep:
+        num_nodes: [4, 6, 8, 10, 12]
+    - name: maxcut
+      label_template: "maxcut-er-{num_nodes}-seed{seed}"
+      base_parameters:
+        graph_family: erdos_renyi
+        edge_probability: 0.4
+        weighted: false
+      sweep:
+        num_nodes: [8, 10, 12]
+        seed: [11, 17]
+    - name: maxcut
+      label_template: "maxcut-weighted-er-{num_nodes}-seed{seed}"
+      base_parameters:
+        graph_family: erdos_renyi
+        edge_probability: 0.4
+        weighted: true
+      sweep:
+        num_nodes: [8, 10, 12]
+        seed: [17, 23]
+    - name: minimum_vertex_cover
+      label_template: "mvc-path-{num_nodes}"
+      base_parameters:
+        graph_family: path
+        penalty_strength: 2.0
+      sweep:
+        num_nodes: [4, 8, 10, 12]
+    - name: minimum_vertex_cover
+      label_template: "mvc-cycle-{num_nodes}"
+      base_parameters:
+        graph_family: cycle
+        penalty_strength: 2.0
+      sweep:
+        num_nodes: [6, 8, 10, 12]
+    - name: minimum_vertex_cover
+      label_template: "mvc-er-{num_nodes}-seed{seed}"
+      base_parameters:
+        graph_family: erdos_renyi
+        edge_probability: 0.4
+        penalty_strength: 2.0
+      sweep:
+        num_nodes: [8, 10, 12]
+        seed: [11, 17]
+  solvers:
+    - label: brute_force
+      name: brute_force
+      parameters:
+        max_variables: 20
+    - label: openjij_sa
+      name: openjij
+      trials: 10
+      parameters:
+        sampler: sa
+        num_reads: 256
+        num_sweeps: 2000
+        max_variables: 128
+  solver_sweeps:
+    - name: qaoa
+      label_template: "qaoa_interpolation_p{reps}"
+      mode: zip
+      base_parameters:
+        max_variables: 12
+        initialization:
+          strategy: interpolation
+        backend:
+          mode: statevector
+      sweep:
+        reps: [1, 2, 3, 4]
+        optimizer.name: [COBYLA, COBYLA, COBYLA, COBYLA]
+        optimizer.maxiter: [220, 240, 260, 280]
+        optimizer.tol: [1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3]
+    - name: qaoa
+      label_template: "qaoa_random_p{reps}"
+      mode: zip
+      trials: 5
+      base_parameters:
+        max_variables: 12
+        initialization:
+          strategy: random
+        backend:
+          mode: statevector
+      sweep:
+        reps: [1, 2, 3, 4]
+        optimizer.name: [COBYLA, COBYLA, COBYLA, COBYLA]
+        optimizer.maxiter: [220, 240, 260, 280]
+        optimizer.tol: [1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3]
+    - name: vqe
+      label_template: "vqe_problem_aware_d{ansatz_depth}"
+      mode: zip
+      trials: 4
+      base_parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: statevector
+      sweep:
+        ansatz.depth: [1, 2, 3]
+        optimizer.name: [COBYLA, COBYLA, COBYLA]
+        optimizer.maxiter: [220, 260, 300]
+        optimizer.tol: [1.0e-3, 1.0e-3, 1.0e-3]
+    - name: vqe
+      label_template: "vqe_hardware_efficient_d{ansatz_depth}"
+      mode: zip
+      trials: 4
+      base_parameters:
+        max_variables: 12
+        ansatz:
+          family: hardware_efficient
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: statevector
+      sweep:
+        ansatz.depth: [1, 2, 3]
+        optimizer.name: [COBYLA, COBYLA, COBYLA]
+        optimizer.maxiter: [220, 260, 300]
+        optimizer.tol: [1.0e-3, 1.0e-3, 1.0e-3]
+
+output:
+  directory: data/results
+  tag: large-final-report-benchmark-campaign

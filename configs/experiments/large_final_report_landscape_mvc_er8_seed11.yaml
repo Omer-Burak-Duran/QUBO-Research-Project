@@ -1,0 +1,54 @@
+experiment_name: large_final_report_landscape_mvc_er8_seed11
+seed: 20260506
+
+problem:
+  name: minimum_vertex_cover
+  parameters:
+    graph_family: erdos_renyi
+    num_nodes: 8
+    edge_probability: 0.4
+    seed: 11
+    penalty_strength: 2.0
+
+qaoa:
+  reps: 1
+  max_variables: 12
+  optimizer:
+    name: COBYLA
+    maxiter: 120
+    tol: 1.0e-3
+  backend:
+    mode: statevector
+  landscape:
+    gamma_bounds: [0.0, 3.141592653589793]
+    gamma_points: 61
+    beta_bounds: [0.0, 1.5707963267948966]
+    beta_points: 61
+  multi_start:
+    trials: 20
+  gradient_statistics:
+    samples: 50
+    epsilon: 0.01
+
+vqe:
+  max_variables: 12
+  ansatz:
+    family: hardware_efficient
+    depth: 1
+  optimizer:
+    name: COBYLA
+    maxiter: 120
+    tol: 1.0e-3
+  backend:
+    mode: statevector
+  initialization:
+    strategy: uniform
+    seed: 20260519
+    scale: 0.2
+  gradient_statistics:
+    samples: 50
+    epsilon: 0.01
+
+output:
+  directory: data/results
+  tag: large-final-report-landscape-mvc-er8-seed11

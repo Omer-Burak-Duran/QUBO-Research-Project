@@ -1,0 +1,234 @@
+experiment_name: large_final_report_backend_campaign
+seed: 20260506
+
+campaign:
+  exact_reference_max_variables: 20
+  problems:
+    - label: maxcut-cycle-6
+      name: maxcut
+      parameters:
+        graph_family: cycle
+        num_nodes: 6
+        weight: 1.0
+    - label: maxcut-er-8-seed11
+      name: maxcut
+      parameters:
+        graph_family: erdos_renyi
+        num_nodes: 8
+        edge_probability: 0.4
+        seed: 11
+        weighted: false
+    - label: maxcut-weighted-er-8-seed17
+      name: maxcut
+      parameters:
+        graph_family: erdos_renyi
+        num_nodes: 8
+        edge_probability: 0.4
+        seed: 17
+        weighted: true
+    - label: maxcut-weighted-er-10-seed17
+      name: maxcut
+      parameters:
+        graph_family: erdos_renyi
+        num_nodes: 10
+        edge_probability: 0.4
+        seed: 17
+        weighted: true
+    - label: mvc-cycle-6
+      name: minimum_vertex_cover
+      parameters:
+        graph_family: cycle
+        num_nodes: 6
+        penalty_strength: 2.0
+    - label: mvc-er-8-seed11
+      name: minimum_vertex_cover
+      parameters:
+        graph_family: erdos_renyi
+        num_nodes: 8
+        edge_probability: 0.4
+        seed: 11
+        penalty_strength: 2.0
+    - label: mvc-er-10-seed11
+      name: minimum_vertex_cover
+      parameters:
+        graph_family: erdos_renyi
+        num_nodes: 10
+        edge_probability: 0.4
+        seed: 11
+        penalty_strength: 2.0
+  solvers:
+    - label: brute_force
+      name: brute_force
+      parameters:
+        max_variables: 20
+    - label: qaoa_statevector
+      name: qaoa
+      trials: 2
+      parameters:
+        reps: 2
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 180
+          tol: 1.0e-3
+        initialization:
+          strategy: random
+        backend:
+          mode: statevector
+    - label: qaoa_shot_1024
+      name: qaoa
+      trials: 2
+      parameters:
+        reps: 2
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 180
+          tol: 1.0e-3
+        initialization:
+          strategy: random
+        backend:
+          mode: shot_based
+          shots: 1024
+    - label: qaoa_shot_4096
+      name: qaoa
+      trials: 2
+      parameters:
+        reps: 2
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 180
+          tol: 1.0e-3
+        initialization:
+          strategy: random
+        backend:
+          mode: shot_based
+          shots: 4096
+    - label: qaoa_noisy_1024
+      name: qaoa
+      trials: 2
+      parameters:
+        reps: 2
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 180
+          tol: 1.0e-3
+        initialization:
+          strategy: random
+        backend:
+          mode: noisy
+          shots: 1024
+          noise_model_name: depolarizing_readout
+    - label: qaoa_noisy_4096
+      name: qaoa
+      trials: 2
+      parameters:
+        reps: 2
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 180
+          tol: 1.0e-3
+        initialization:
+          strategy: random
+        backend:
+          mode: noisy
+          shots: 4096
+          noise_model_name: depolarizing_readout
+    - label: vqe_problem_aware_statevector
+      name: vqe
+      trials: 2
+      parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 2
+        optimizer:
+          name: COBYLA
+          maxiter: 220
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: statevector
+    - label: vqe_problem_aware_shot_1024
+      name: vqe
+      trials: 2
+      parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 2
+        optimizer:
+          name: COBYLA
+          maxiter: 220
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: shot_based
+          shots: 1024
+    - label: vqe_problem_aware_shot_4096
+      name: vqe
+      trials: 2
+      parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 2
+        optimizer:
+          name: COBYLA
+          maxiter: 220
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: shot_based
+          shots: 4096
+    - label: vqe_problem_aware_noisy_1024
+      name: vqe
+      trials: 2
+      parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 2
+        optimizer:
+          name: COBYLA
+          maxiter: 220
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: noisy
+          shots: 1024
+          noise_model_name: depolarizing_readout
+    - label: vqe_problem_aware_noisy_4096
+      name: vqe
+      trials: 2
+      parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 2
+        optimizer:
+          name: COBYLA
+          maxiter: 220
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+        backend:
+          mode: noisy
+          shots: 4096
+          noise_model_name: depolarizing_readout
+
+output:
+  directory: data/results
+  tag: large-final-report-backend-campaign
