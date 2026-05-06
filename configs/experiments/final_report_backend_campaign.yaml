@@ -1,0 +1,73 @@
+experiment_name: final_report_backend_campaign
+seed: 20260506
+
+campaign:
+  exact_reference_max_variables: 20
+  problems:
+    - label: maxcut-cycle-4
+      name: maxcut
+      parameters:
+        graph_family: cycle
+        num_nodes: 4
+        weight: 1.0
+    - label: maxcut-er-6-seed11
+      name: maxcut
+      parameters:
+        graph_family: erdos_renyi
+        num_nodes: 6
+        edge_probability: 0.5
+        seed: 11
+        weighted: false
+    - label: mvc-cycle-4
+      name: minimum_vertex_cover
+      parameters:
+        graph_family: cycle
+        num_nodes: 4
+        penalty_strength: 2.0
+  solvers:
+    - label: brute_force
+      name: brute_force
+      parameters:
+        max_variables: 20
+  solver_sweeps:
+    - name: qaoa
+      label_template: "qaoa_{backend_mode}"
+      mode: zip
+      trials: 2
+      base_parameters:
+        reps: 1
+        max_variables: 12
+        optimizer:
+          name: COBYLA
+          maxiter: 45
+          tol: 1.0e-3
+        initialization:
+          strategy: interpolation
+      sweep:
+        backend.mode: [statevector, shot_based, noisy]
+        backend.shots: [null, 1024, 1024]
+        backend.noise_model_name: [null, null, depolarizing_readout]
+    - name: vqe
+      label_template: "vqe_{backend_mode}"
+      mode: zip
+      trials: 2
+      base_parameters:
+        max_variables: 12
+        ansatz:
+          family: problem_aware
+          depth: 1
+        optimizer:
+          name: COBYLA
+          maxiter: 70
+          tol: 1.0e-3
+        initialization:
+          strategy: small_random
+          scale: 0.2
+      sweep:
+        backend.mode: [statevector, shot_based, noisy]
+        backend.shots: [null, 1024, 1024]
+        backend.noise_model_name: [null, null, depolarizing_readout]
+
+output:
+  directory: data/results
+  tag: final-report-backend-campaign

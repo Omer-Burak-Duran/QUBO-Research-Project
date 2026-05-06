@@ -8,6 +8,7 @@ from qubo_vqa.analysis.campaign_summary import (
     aggregate_benchmark_case_metrics,
     aggregate_benchmark_group_metrics,
     build_benchmark_interpretation,
+    compute_feasibility_adjusted_optimality_ratio,
     compute_optimality_ratio,
     render_benchmark_interpretation_markdown,
 )
@@ -30,6 +31,28 @@ def test_compute_optimality_ratio_handles_max_and_min_objectives() -> None:
         objective_value=4.0,
         optimum_objective_value=2.0,
     ) == 0.5
+
+
+def test_feasibility_adjusted_optimality_ratio_penalizes_infeasible_mvc() -> None:
+    """Infeasible constrained solutions should not look better because they are smaller."""
+    assert (
+        compute_feasibility_adjusted_optimality_ratio(
+            problem_name="minimum_vertex_cover",
+            objective_value=1.0,
+            optimum_objective_value=2.0,
+            is_feasible=False,
+        )
+        == 0.0
+    )
+    assert (
+        compute_feasibility_adjusted_optimality_ratio(
+            problem_name="minimum_vertex_cover",
+            objective_value=2.0,
+            optimum_objective_value=2.0,
+            is_feasible=True,
+        )
+        == 1.0
+    )
 
 
 def test_campaign_aggregation_tracks_status_quality_gap() -> None:

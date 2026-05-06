@@ -31,6 +31,22 @@ def compute_optimality_ratio(
     return float(objective_value / optimum_objective_value)
 
 
+def compute_feasibility_adjusted_optimality_ratio(
+    *,
+    problem_name: str,
+    objective_value: float,
+    optimum_objective_value: float,
+    is_feasible: bool,
+) -> float:
+    """Return objective quality, assigning zero quality to infeasible decoded solutions."""
+    objective_ratio = compute_optimality_ratio(
+        problem_name=problem_name,
+        objective_value=objective_value,
+        optimum_objective_value=optimum_objective_value,
+    )
+    return objective_ratio if is_feasible else 0.0
+
+
 def _best_objective(problem_name: str, values: list[float]) -> float:
     """Return the best semantic objective value for one problem family."""
     if objective_sense(problem_name) == "min":

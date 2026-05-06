@@ -619,7 +619,7 @@ These commands were revalidated using the repository virtual environment and sho
 
 Outcome at last validation:
 
-- `44 passed`
+- `45 passed`
 
 ### Run the classical MaxCut example
 
@@ -988,7 +988,28 @@ Commands executed in this session:
 - `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/moderate_benchmark_campaign.yaml --output-dir data/results/session-20260415`
 - `& ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml --output-dir data/results/session-20260415`
 
-Observed outcomes in this pass:
+Observed outcomes in this historical April report pass:
 
 - tests passed: `44 passed`
 - all planned commands above completed successfully
+
+## May 6 Final Benchmark Readiness Update
+
+The final-report benchmark suite is now prepared but not yet executed. The current runnable scope remains
+MaxCut and Minimum Vertex Cover only.
+
+Current validation status:
+
+- stale Traveling Salesman Problem package export removed;
+- campaign optimality metrics are feasibility-adjusted for constrained Minimum Vertex Cover results;
+- final benchmark configs load successfully;
+- tests passed: `45 passed`;
+- final benchmark execution guide: `documents/final-benchmark-session-20260506.md`;
+- final benchmark rationale and artifact guide: `documents/final-benchmark-explanation.md`.
+
+Final benchmark configs:
+
+- `configs/experiments/final_report_benchmark_campaign.yaml`
+- `configs/experiments/final_report_backend_campaign.yaml`
+- `configs/experiments/final_report_qaoa_initialization_comparison.yaml`
+- `configs/experiments/final_report_landscape_analysis.yaml`

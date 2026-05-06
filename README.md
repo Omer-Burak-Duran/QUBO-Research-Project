@@ -194,6 +194,20 @@ All benchmark-campaign runs save:
 - `notes.md`
 - aggregate benchmark plots under `plots/`
 
+## Final report benchmark suite
+
+The May 6 final-report benchmark suite is documented in:
+
+- `documents/final-benchmark-session-20260506.md`
+- `documents/final-benchmark-explanation.md`
+
+It uses these configs:
+
+- `configs/experiments/final_report_benchmark_campaign.yaml`
+- `configs/experiments/final_report_backend_campaign.yaml`
+- `configs/experiments/final_report_qaoa_initialization_comparison.yaml`
+- `configs/experiments/final_report_landscape_analysis.yaml`
+
 ## Run the first landscape-analysis example
 
 ```bash

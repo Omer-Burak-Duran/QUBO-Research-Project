@@ -16,6 +16,7 @@ from qubo_vqa.analysis.campaign_summary import (
     aggregate_benchmark_group_metrics,
     aggregate_benchmark_solver_family_metrics,
     build_benchmark_interpretation,
+    compute_feasibility_adjusted_optimality_ratio,
     compute_optimality_ratio,
     render_benchmark_interpretation_markdown,
 )
@@ -513,11 +514,21 @@ def run_benchmark_campaign(
                     )
                 )
                 optimizer_reported_success = result.metadata.get("optimization_success")
-                optimality_ratio = (
+                objective_optimality_ratio = (
                     compute_optimality_ratio(
                         problem_name=problem_case.problem.name,
                         objective_value=float(result.decoded_solution.objective_value),
                         optimum_objective_value=float(optimum_objective_value),
+                    )
+                    if optimum_objective_value is not None
+                    else None
+                )
+                optimality_ratio = (
+                    compute_feasibility_adjusted_optimality_ratio(
+                        problem_name=problem_case.problem.name,
+                        objective_value=float(result.decoded_solution.objective_value),
+                        optimum_objective_value=float(optimum_objective_value),
+                        is_feasible=bool(result.decoded_solution.is_feasible),
                     )
                     if optimum_objective_value is not None
                     else None
@@ -528,6 +539,7 @@ def run_benchmark_campaign(
                         "seed": trial_seed,
                         "optimum_objective_value": optimum_objective_value,
                         "reference_available": optimum_objective_value is not None,
+                        "objective_optimality_ratio": objective_optimality_ratio,
                         "optimality_ratio": optimality_ratio,
                         "solution_quality_success": (
                             bool(optimality_ratio >= 0.999999)

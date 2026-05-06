@@ -81,7 +81,7 @@ Run the full test suite:
 & ".\.venv\Scripts\python.exe" -m pytest
 ```
 
-Expected current baseline: `44 passed`.
+Expected current baseline: `45 passed`.
 
 ## Starter Single Runs
 
@@ -185,6 +185,26 @@ Adds `shot_based` and `noisy` backend comparisons across shared small MaxCut and
 ```powershell
 & ".\.venv\Scripts\python.exe" -m qubo_vqa.cli run-benchmark-campaign --config configs/experiments/backend_benchmark_campaign.yaml
 ```
+
+### Final Report Campaigns
+
+The final-report run set for the May 6 benchmark session is documented in:
+
+- `documents/final-benchmark-session-20260506.md`
+- `documents/final-benchmark-explanation.md`
+
+These configs are intended to be run under one output root:
+
+```powershell
+data/results/session-20260506
+```
+
+The final-report configs are:
+
+- `configs/experiments/final_report_benchmark_campaign.yaml`
+- `configs/experiments/final_report_backend_campaign.yaml`
+- `configs/experiments/final_report_qaoa_initialization_comparison.yaml`
+- `configs/experiments/final_report_landscape_analysis.yaml`
 
 ## What The Main Configs Do
 

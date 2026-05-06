@@ -1,0 +1,54 @@
+experiment_name: final_report_landscape_analysis
+seed: 20260506
+
+problem:
+  name: maxcut
+  parameters:
+    graph_family: erdos_renyi
+    num_nodes: 6
+    edge_probability: 0.5
+    seed: 11
+    weighted: false
+
+qaoa:
+  reps: 1
+  max_variables: 12
+  optimizer:
+    name: COBYLA
+    maxiter: 70
+    tol: 1.0e-3
+  backend:
+    mode: statevector
+  landscape:
+    gamma_bounds: [0.0, 3.141592653589793]
+    gamma_points: 31
+    beta_bounds: [0.0, 1.5707963267948966]
+    beta_points: 31
+  multi_start:
+    trials: 6
+  gradient_statistics:
+    samples: 12
+    epsilon: 0.01
+
+vqe:
+  max_variables: 12
+  ansatz:
+    family: hardware_efficient
+    depth: 1
+  optimizer:
+    name: COBYLA
+    maxiter: 70
+    tol: 1.0e-3
+  backend:
+    mode: statevector
+  initialization:
+    strategy: uniform
+    seed: 20260519
+    scale: 0.2
+  gradient_statistics:
+    samples: 12
+    epsilon: 0.01
+
+output:
+  directory: data/results
+  tag: final-report-landscape-analysis
